@@ -111,3 +111,56 @@ Kevin Nielsen
 GitHub: https://github.com/KevinNielsen00
 
 ---
+
+## Server Setup
+
+Projektet bruger en selv-hostet PostgreSQL database på en Oracle Linux server.
+
+### Server
+
+- Hosting: Oracle Cloud
+- OS: Oracle Linux
+- Database: PostgreSQL 17
+- Database UI: pgAdmin 4
+- Backend: ASP.NET Core
+- ORM: Entity Framework Core
+- Database provider: Npgsql.EntityFrameworkCore.PostgreSQL
+
+---
+
+## Database
+
+Databasen kører på PostgreSQL og tilgås af backend via EF Core.
+
+### Connection string
+
+Backend bruger connection string fra `appsettings.json`:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Host=<SERVER_IP>;Port=5432;Database=nimaticdb;Username=<DB_USER>;Password=<DB_PASSWORD>"
+}
+
+## MQTT Broker
+
+Projektet bruger en lokal MQTT broker på serveren til at modtage data fra IoT-enheder.
+
+### Broker
+
+- Software: :contentReference[oaicite:0]{index=0}
+- Kører på: Oracle Linux server
+- Port: 1883 (standard MQTT)
+
+---
+
+## MQTT Configuration
+
+Backend forbinder til MQTT brokeren via konfiguration:
+
+```json
+"Mqtt": {
+  "Broker": "<SERVER_IP>",
+  "Topic": "iot/data",
+  "Username": "<MQTT_USER>",
+  "Password": "<MQTT_PASSWORD>"
+}
