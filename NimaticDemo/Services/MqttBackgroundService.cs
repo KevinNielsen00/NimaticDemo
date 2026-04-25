@@ -86,21 +86,39 @@ public class MqttBackgroundService : BackgroundService
 
         var mac = payload.D.Trim().ToUpperInvariant();
 
-        var unit = await db.Units.FirstOrDefaultAsync(u => u.MacAddress == mac, cancellationToken);
+        var unit = await db.Units
+            .FirstOrDefaultAsync(u => u.MacAddress == mac, cancellationToken);
 
         if (unit is null)
         {
-            var defaultAccountId = _configuration["DefaultAccountId"];
+            var defaultCustomerId = _configuration["DefaultCustomerId"];
 
-            if (string.IsNullOrWhiteSpace(defaultAccountId) || !Guid.TryParse(defaultAccountId, out var accountId))
+            if (string.IsNullOrWhiteSpace(defaultCustomerId) ||
+                !Guid.TryParse(defaultCustomerId, out var customerId))
             {
-                _logger.LogWarning("Unit not found and DefaultAccountId is missing/invalid. MAC: {Mac}", mac);
+                _logger.LogWarning(
+                    "Unit not found and DefaultCustomerId is missing/invalid. MAC: {Mac}",
+                    mac
+                );
+                return;
+            }
+
+            var customerExists = await db.Customers
+                .AnyAsync(c => c.Id == customerId, cancellationToken);
+
+            if (!customerExists)
+            {
+                _logger.LogWarning(
+                    "Unit not found and DefaultCustomerId does not match any customer. CustomerId: {CustomerId}, MAC: {Mac}",
+                    customerId,
+                    mac
+                );
                 return;
             }
 
             unit = new Unit
             {
-                AccountId = accountId,
+                CustomerId = customerId,
                 MacAddress = mac,
                 UnitName = $"Unit-{mac}"
             };

@@ -10,6 +10,8 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<Dealer> Dealers => Set<Dealer>();
+    public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Unit> Units => Set<Unit>();
     public DbSet<Measurement> Measurements => Set<Measurement>();
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
@@ -18,15 +20,37 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Account>()
+            .Property(a => a.Role)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Account>()
+            .HasOne(a => a.Dealer)
+            .WithMany(d => d.Accounts)
+            .HasForeignKey(a => a.DealerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Account>()
+            .HasOne(a => a.Customer)
+            .WithMany(c => c.Accounts)
+            .HasForeignKey(a => a.CustomerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Dealer>()
+            .HasMany(d => d.Customers)
+            .WithOne(c => c.Dealer)
+            .HasForeignKey(c => c.DealerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Customer>()
+            .HasMany(c => c.Units)
+            .WithOne(u => u.Customer)
+            .HasForeignKey(u => u.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<Unit>()
             .HasIndex(u => u.MacAddress)
             .IsUnique();
-
-        modelBuilder.Entity<Unit>()
-            .HasOne(u => u.Account)
-            .WithMany(a => a.Units)
-            .HasForeignKey(u => u.AccountId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Measurement>()
             .HasOne(m => m.Unit)

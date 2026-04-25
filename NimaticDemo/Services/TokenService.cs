@@ -32,9 +32,19 @@ public class TokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, account.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, account.Email),
-            new Claim(ClaimTypes.Name, account.Name),
-            new Claim(ClaimTypes.NameIdentifier, account.Id.ToString())
+            new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
+            new Claim(ClaimTypes.Role, account.Role.ToString())
         };
+
+        if (account.DealerId.HasValue)
+        {
+            claims.Add(new Claim("dealerId", account.DealerId.Value.ToString()));
+        }
+
+        if (account.CustomerId.HasValue)
+        {
+            claims.Add(new Claim("customerId", account.CustomerId.Value.ToString()));
+        }
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
