@@ -1,0 +1,84 @@
+﻿@page "/dashboard"
+@using Frontend.Models
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject Frontend.Services.ApiService ApiService
+@inject Frontend.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h3>Dashboard</h3>
+
+@if (isLoading)
+{
+    <p>Loading units...</p>
+}
+else if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (units.Count == 0)
+{
+    <p>No units found.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var unit in units)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm p-3">
+                    <h5>@(unit.UnitName ?? "Unnamed Unit")</h5>
+                    <p><b>MAC:</b> @unit.MacAddress</p>
+                    <p><b>Location:</b> @unit.Location</p>
+
+                    <button class="btn btn-primary"
+                            @onclick="() => GoToUnit(unit.Id)">
+                        View Data
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<UnitDto> units = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+    private bool loaded;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        loaded = true;
+
+        try
+        {
+            var token = await AuthService.GetTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            ApiService.SetToken(token);
+            units = await ApiService.GetUnitsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToUnit(Guid unitId)
+    {
+        Navigation.NavigateTo($"/unit/{unitId}");
+    }
+}

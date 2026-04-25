@@ -1,0 +1,501 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\controllers\\settingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\controllers\\settingscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\dtos\\settingdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\dtos\\settingdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\models\\usersettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\models\\usersettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\pages\\unitdetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\pages\\unitdetails.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\layout\\navmenu.razor.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\layout\\navmenu.razor.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\app.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\models\\loginrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\models\\loginrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\models\\measurementdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\models\\measurementdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\models\\unitdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\models\\unitdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\frontend\\models\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{90CF18BE-437A-4804-9E85-213B3EBFA1C5}|Frontend\\Frontend.csproj|solutionrelative:frontend\\models\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\controllers\\unitscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\controllers\\unitscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\dtos\\measurements\\measurementdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\dtos\\measurements\\measurementdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\dtos\\units\\unitdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\dtos\\units\\unitdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\dtos\\units\\createunitdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\dtos\\units\\createunitdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|c:\\users\\kevin\\source\\repos\\nimaticdemo\\nimaticdemo\\models\\account.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6E17583E-9D48-FE42-60D2-C241DAB16CE5}|NimaticDemo\\Backend.csproj|solutionrelative:nimaticdemo\\models\\account.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SettingsController.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Controllers\\SettingsController.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Controllers\\SettingsController.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Controllers\\SettingsController.cs",
+              "RelativeToolTip": "NimaticDemo\\Controllers\\SettingsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T01:25:08.15Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SettingDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\SettingDto.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\DTOs\\SettingDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\SettingDto.cs",
+              "RelativeToolTip": "NimaticDemo\\DTOs\\SettingDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T01:24:44.454Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UserSettings.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Models\\UserSettings.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Models\\UserSettings.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Models\\UserSettings.cs",
+              "RelativeToolTip": "NimaticDemo\\Models\\UserSettings.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T01:23:31.104Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "Frontend\\Components\\Layout\\NavMenu.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-01T00:20:22.064Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Login.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\Login.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Pages\\Login.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\Login.razor",
+              "RelativeToolTip": "Frontend\\Components\\Pages\\Login.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-31T23:58:10.073Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "App.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\App.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\App.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\App.razor",
+              "RelativeToolTip": "Frontend\\Components\\App.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-01T00:21:25.438Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Routes.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Routes.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Routes.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Routes.razor",
+              "RelativeToolTip": "Frontend\\Components\\Routes.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-01T00:12:12.919Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "Frontend\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Properties\\launchSettings.json",
+              "RelativeToolTip": "Frontend\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-01T00:11:25.124Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "ApiService.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Services\\ApiService.cs",
+              "RelativeDocumentMoniker": "Frontend\\Services\\ApiService.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Services\\ApiService.cs",
+              "RelativeToolTip": "Frontend\\Services\\ApiService.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABcAAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T00:01:32.78Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Dashboard.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\Dashboard.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Pages\\Dashboard.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\Dashboard.razor",
+              "RelativeToolTip": "Frontend\\Components\\Pages\\Dashboard.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-31T23:58:29.754Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "UnitDetails.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\UnitDetails.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Pages\\UnitDetails.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\UnitDetails.razor",
+              "RelativeToolTip": "Frontend\\Components\\Pages\\UnitDetails.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-03-31T23:58:54.67Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Data\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Data\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Data\\AppDbContext.cs",
+              "RelativeToolTip": "NimaticDemo\\Data\\AppDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADAAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T22:29:50.569Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "MainLayout.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Layout\\MainLayout.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Layout\\MainLayout.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Layout\\MainLayout.razor",
+              "RelativeToolTip": "Frontend\\Components\\Layout\\MainLayout.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-01T00:20:42.254Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AuthService.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Services\\AuthService.cs",
+              "RelativeDocumentMoniker": "Frontend\\Services\\AuthService.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Services\\AuthService.cs",
+              "RelativeToolTip": "Frontend\\Services\\AuthService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T00:01:40.118Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "_Imports.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\_Imports.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\_Imports.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\_Imports.razor",
+              "RelativeToolTip": "Frontend\\Components\\_Imports.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-01T00:21:27.503Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\appsettings.json",
+              "RelativeDocumentMoniker": "Frontend\\appsettings.json",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\appsettings.json",
+              "RelativeToolTip": "Frontend\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-01T00:21:57.901Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "NavMenu.razor.css",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Layout\\NavMenu.razor.css",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Layout\\NavMenu.razor.css",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Layout\\NavMenu.razor.css",
+              "RelativeToolTip": "Frontend\\Components\\Layout\\NavMenu.razor.css",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-01T00:22:16.709Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Home.razor",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\Home.razor",
+              "RelativeDocumentMoniker": "Frontend\\Components\\Pages\\Home.razor",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Components\\Pages\\Home.razor",
+              "RelativeToolTip": "Frontend\\Components\\Pages\\Home.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-01T00:23:17.104Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Program.cs",
+              "RelativeDocumentMoniker": "Frontend\\Program.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Program.cs",
+              "RelativeToolTip": "Frontend\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:59:27.968Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "MeasurementDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\MeasurementDto.cs",
+              "RelativeDocumentMoniker": "Frontend\\Models\\MeasurementDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\MeasurementDto.cs",
+              "RelativeToolTip": "Frontend\\Models\\MeasurementDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:59:20.988Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "LoginRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\LoginRequestDto.cs",
+              "RelativeDocumentMoniker": "Frontend\\Models\\LoginRequestDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\LoginRequestDto.cs",
+              "RelativeToolTip": "Frontend\\Models\\LoginRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T00:02:10.474Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "AuthResponse.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\AuthResponse.cs",
+              "RelativeDocumentMoniker": "Frontend\\Models\\AuthResponse.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\AuthResponse.cs",
+              "RelativeToolTip": "Frontend\\Models\\AuthResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-01T00:02:28.915Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "UnitDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\UnitDto.cs",
+              "RelativeDocumentMoniker": "Frontend\\Models\\UnitDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\Frontend\\Models\\UnitDto.cs",
+              "RelativeToolTip": "Frontend\\Models\\UnitDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:59:11.873Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "MeasurementDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\Measurements\\MeasurementDto.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\DTOs\\Measurements\\MeasurementDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\Measurements\\MeasurementDto.cs",
+              "RelativeToolTip": "NimaticDemo\\DTOs\\Measurements\\MeasurementDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:49:28.112Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "UnitDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\Units\\UnitDto.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\DTOs\\Units\\UnitDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\Units\\UnitDto.cs",
+              "RelativeToolTip": "NimaticDemo\\DTOs\\Units\\UnitDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:48:07.508Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "CreateUnitDto.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\Units\\CreateUnitDto.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\DTOs\\Units\\CreateUnitDto.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\DTOs\\Units\\CreateUnitDto.cs",
+              "RelativeToolTip": "NimaticDemo\\DTOs\\Units\\CreateUnitDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:48:01.718Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "UnitsController.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Controllers\\UnitsController.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Controllers\\UnitsController.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Controllers\\UnitsController.cs",
+              "RelativeToolTip": "NimaticDemo\\Controllers\\UnitsController.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAArwB8AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:34:43.322Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "NimaticDemo\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAABEAAAAAAAAAAAA2wCMAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:28:50.096Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "Account.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Models\\Account.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Models\\Account.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Models\\Account.cs",
+              "RelativeToolTip": "NimaticDemo\\Models\\Account.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T23:26:30.147Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Program.cs",
+              "RelativeDocumentMoniker": "NimaticDemo\\Program.cs",
+              "ToolTip": "C:\\Users\\kevin\\source\\repos\\NimaticDemo\\NimaticDemo\\Program.cs",
+              "RelativeToolTip": "NimaticDemo\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-31T22:32:48.191Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

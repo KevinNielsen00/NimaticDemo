@@ -1,0 +1,88 @@
+﻿@page "/unit/{Id:guid}"
+@using Frontend.Models
+@rendermode InteractiveServer
+@inject Frontend.Services.ApiService ApiService
+
+<h3>Unit Details</h3>
+
+@if (isLoading)
+{
+    <p>Loading measurements...</p>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+else if (measurements.Count == 0)
+{
+    <p>No measurements found for this unit.</p>
+}
+else
+{
+    <div class="card mb-4 p-3 shadow-sm">
+        <h5>Latest Measurement</h5>
+        <p><b>Depth:</b> @latestMeasurement?.Depth</p>
+        <p><b>Restarts:</b> @latestMeasurement?.Restarts</p>
+        <p><b>Battery:</b> @latestMeasurement?.Battery</p>
+        <p><b>Temperature:</b> @latestMeasurement?.Temperature</p>
+        <p><b>Measured At:</b> @latestMeasurement?.MeasuredAt.ToLocalTime()</p>
+    </div>
+
+    <h5>Measurement History</h5>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Depth</th>
+                <th>Restarts</th>
+                <th>Battery</th>
+                <th>Temperature</th>
+                <th>Measured At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var measurement in measurements)
+            {
+                <tr>
+                    <td>@measurement.Depth</td>
+                    <td>@measurement.Restarts</td>
+                    <td>@measurement.Battery</td>
+                    <td>@measurement.Temperature</td>
+                    <td>@measurement.MeasuredAt.ToLocalTime()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private List<MeasurementDto> measurements = new();
+    private MeasurementDto? latestMeasurement;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            measurements = await ApiService.GetMeasurementsAsync(Id);
+            latestMeasurement = measurements.FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

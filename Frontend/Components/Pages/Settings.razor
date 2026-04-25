@@ -1,0 +1,133 @@
+﻿@page "/settings"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using Frontend.Models
+@inject Frontend.Services.ApiService ApiService
+@inject Frontend.Services.AuthService AuthService
+@inject NavigationManager Navigation
+
+<h3>Settings</h3>
+
+@if (isLoading)
+{
+    <p>Loading settings...</p>
+}
+else if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-success">@message</div>
+}
+
+@if (!isLoading && settings is not null)
+{
+    <div class="card p-3 mb-3">
+        <h5>Account</h5>
+        <button class="btn btn-outline-primary" @onclick="RequestPasswordChange">
+            Request password change
+        </button>
+    </div>
+
+    <div class="card p-3 mb-3">
+        <h5>Appearance</h5>
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" @bind="settings.DarkMode" />
+            <label class="form-check-label">Enable dark mode</label>
+        </div>
+    </div>
+
+    <div class="card p-3 mb-3">
+        <h5>Notifications</h5>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" @bind="settings.AutoEmailWhenLow" />
+            <label class="form-check-label">
+                Send automatic email when barrel is almost empty
+            </label>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Low level threshold</label>
+            <input class="form-control" type="number" @bind="settings.LowLevelThreshold" />
+        </div>
+    </div>
+
+    <button class="btn btn-success" @onclick="SaveSettings">Save settings</button>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
+
+@code {
+    private SettingsDto? settings;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string? message;
+    private bool loaded;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || loaded)
+            return;
+
+        loaded = true;
+
+        try
+        {
+            var token = await AuthService.GetTokenAsync();
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            ApiService.SetToken(token);
+            settings = await ApiService.GetSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        if (settings is null)
+            return;
+
+        message = null;
+        errorMessage = null;
+
+        try
+        {
+            await ApiService.UpdateSettingsAsync(settings);
+            message = "Settings saved.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task RequestPasswordChange()
+    {
+        message = null;
+        errorMessage = null;
+
+        try
+        {
+            await ApiService.RequestPasswordChangeAsync();
+            message = "Password change request sent.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

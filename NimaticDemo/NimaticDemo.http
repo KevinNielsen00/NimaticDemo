@@ -1,0 +1,6 @@
+@NimaticDemo_HostAddress = http://localhost:5015
+
+GET {{NimaticDemo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

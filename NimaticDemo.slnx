@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Frontend/Frontend.csproj" />
+  <Project Path="NimaticDemo/Backend.csproj" />
+</Solution>
