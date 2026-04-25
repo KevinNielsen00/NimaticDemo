@@ -1,0 +1,65 @@
+# Build results
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code / Visual Studio
+.vs/
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ASP.NET Core
+appsettings.Development.json
+appsettings.Local.json
+
+# Secrets
+secrets.json
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# Publish output
+publish/
+wwwroot/dist/
+
+# Node (hvis du bruger frontend tooling)
+node_modules/
+
+# Coverage / test
+TestResults/
+coverage/
+
+# Entity Framework
+*.db
+*.sqlite
+
+# Azure
+.publishsettings
+
+# IIS Express
+iisexpress/
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Dotnet tools
+.dotnet/
+
+# Temporary files
+*.tmp
+*.temp
