@@ -7,6 +7,7 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
+.env
 
 # Rider / VS Code / Visual Studio
 .vs/
