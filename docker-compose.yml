@@ -5,6 +5,13 @@ services:
     container_name: nimatic-backend
     ports:
       - "5000:8080"
+    env_file:
+      - .env
+    environment:
+      ConnectionStrings__DefaultConnection: Host=host.containers.internal;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Jwt__Key: ${JWT_KEY}
+      Mqtt__Broker: ${MQTT_BROKER}
+      Mqtt__Topic: ${MQTT_TOPIC}
     restart: unless-stopped
 
   frontend:
