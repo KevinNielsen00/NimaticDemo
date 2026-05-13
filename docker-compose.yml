@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: ./NimaticDemo
+    container_name: nimatic-backend
+    ports:
+      - "5000:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Frontend
+    container_name: nimatic-frontend
+    ports:
+      - "3000:8080"
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+    restart: unless-stopped
