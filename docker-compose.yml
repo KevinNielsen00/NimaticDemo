@@ -11,8 +11,13 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=host.containers.internal;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: Backend
+      Jwt__Audience: Frontend
       Mqtt__Broker: ${MQTT_BROKER}
       Mqtt__Topic: ${MQTT_TOPIC}
+      Mqtt__Username: ${MQTT_USERNAME}
+      Mqtt__Password: ${MQTT_PASSWORD}
+      DefaultCustomerId: ${DEFAULT_CUSTOMER_ID}
     restart: unless-stopped
 
   frontend:

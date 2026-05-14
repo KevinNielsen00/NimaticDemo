@@ -31,6 +31,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHostedService<MqttBackgroundService>();
 
 builder.Services.AddCors(options =>
 {
