@@ -91,40 +91,36 @@ public class MqttBackgroundService : BackgroundService
 
         if (unit is null)
         {
-            var defaultCustomerId = _configuration["DefaultCustomerId"];
+            var adminAccountIdConfig = _configuration["AdminAccountId"];
 
-            if (string.IsNullOrWhiteSpace(defaultCustomerId) ||
-                !Guid.TryParse(defaultCustomerId, out var customerId))
+            if (string.IsNullOrWhiteSpace(adminAccountIdConfig) ||
+                !Guid.TryParse(adminAccountIdConfig, out var adminAccountId))
             {
-                _logger.LogWarning(
-                    "Unit not found and DefaultCustomerId is missing/invalid. MAC: {Mac}",
-                    mac
-                );
+                _logger.LogWarning("Unit not found and AdminAccountId is missing/invalid. MAC: {Mac}", mac);
                 return;
             }
 
-            var customerExists = await db.Customers
-                .AnyAsync(c => c.Id == customerId, cancellationToken);
+            var adminAccountExists = await db.Accounts
+                .AnyAsync(a => a.Id == adminAccountId, cancellationToken);
 
-            if (!customerExists)
+            if (!adminAccountExists)
             {
-                _logger.LogWarning(
-                    "Unit not found and DefaultCustomerId does not match any customer. CustomerId: {CustomerId}, MAC: {Mac}",
-                    customerId,
-                    mac
-                );
+                _logger.LogWarning("AdminAccountId does not match any account. AdminAccountId: {AdminAccountId}", adminAccountId);
                 return;
             }
 
             unit = new Unit
             {
-                CustomerId = customerId,
+                AccountId = adminAccountId,
                 MacAddress = mac,
-                UnitName = $"Unit-{mac}"
+                UnitName = $"Unit-{mac}",
+                CreatedAt = DateTime.UtcNow
             };
 
             db.Units.Add(unit);
             await db.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("New unit auto-created and linked to admin. MAC: {Mac}", mac);
         }
 
         var measurement = new Measurement
