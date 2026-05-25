@@ -42,10 +42,10 @@ public class AppDbContext : DbContext
             .HasForeignKey(c => c.DealerId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Customer>()
-            .HasMany(c => c.Units)
-            .WithOne(u => u.Customer)
-            .HasForeignKey(u => u.CustomerId)
+        modelBuilder.Entity<Account>()
+            .HasMany(a => a.Units)
+            .WithOne(u => u.Account)
+            .HasForeignKey(u => u.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Unit>()

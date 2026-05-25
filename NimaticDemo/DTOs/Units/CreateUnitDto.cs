@@ -6,5 +6,5 @@ public class CreateUnitDto
     public string? UnitName { get; set; }
     public string? Location { get; set; }
 
-    public Guid? CustomerId { get; set; }
+    public Guid? AccountId { get; set; }
 }

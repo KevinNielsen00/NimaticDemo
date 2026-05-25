@@ -5,7 +5,6 @@ using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace Backend.Controllers;
 
@@ -137,64 +136,33 @@ public class UnitsController : ControllerBase
 
         var mac = dto.MacAddress.Trim().ToUpperInvariant();
 
-        var existingUnit = await _db.Units.FirstOrDefaultAsync(u => u.MacAddress == mac);
+        var existingUnit = await _db.Units
+            .FirstOrDefaultAsync(u => u.MacAddress == mac);
 
         if (existingUnit != null)
             return BadRequest("A unit with this MAC address already exists.");
 
-        Guid customerId;
+        var accountId = GetAccountId();
 
-        if (User.IsInRole(nameof(AccountRole.Customer)))
-        {
-            var currentCustomerId = GetCustomerId();
-
-            if (currentCustomerId == null)
-                return Unauthorized();
-
-            customerId = currentCustomerId.Value;
-        }
-        else if (User.IsInRole(nameof(AccountRole.Dealer)))
-        {
-            if (dto.CustomerId == null)
-                return BadRequest("CustomerId is required for dealer users.");
-
-            var dealerId = GetDealerId();
-
-            if (dealerId == null)
-                return Unauthorized();
-
-            var customerBelongsToDealer = await _db.Customers
-                .AnyAsync(c => c.Id == dto.CustomerId.Value && c.DealerId == dealerId.Value);
-
-            if (!customerBelongsToDealer)
-                return Forbid();
-
-            customerId = dto.CustomerId.Value;
-        }
-        else if (User.IsInRole(nameof(AccountRole.Admin)))
-        {
-            if (dto.CustomerId == null)
-                return BadRequest("CustomerId is required for admin users.");
-
-            var customerExists = await _db.Customers
-                .AnyAsync(c => c.Id == dto.CustomerId.Value);
-
-            if (!customerExists)
-                return BadRequest("Customer not found.");
-
-            customerId = dto.CustomerId.Value;
-        }
-        else
-        {
+        if (accountId == null)
             return Unauthorized();
+
+        if (!User.IsInRole(nameof(AccountRole.Admin)))
+        {
+            var accountExists = await _db.Accounts
+                .AnyAsync(a => a.Id == accountId.Value);
+
+            if (!accountExists)
+                return Unauthorized();
         }
 
         var unit = new Unit
         {
-            CustomerId = customerId,
+            AccountId = accountId.Value,
             MacAddress = mac,
             UnitName = string.IsNullOrWhiteSpace(dto.UnitName) ? null : dto.UnitName.Trim(),
-            Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim()
+            Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim(),
+            CreatedAt = DateTime.UtcNow
         };
 
         _db.Units.Add(unit);
@@ -211,16 +179,46 @@ public class UnitsController : ControllerBase
         return CreatedAtAction(nameof(GetUnitById), new { unitId = unit.Id }, result);
     }
 
+    [HttpPost("claim")]
+    public async Task<IActionResult> ClaimUnit([FromBody] ClaimUnitDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.MacAddress))
+            return BadRequest("MacAddress is required.");
+
+        var mac = dto.MacAddress.Trim().ToUpperInvariant();
+
+        var accountId = GetAccountId();
+
+        if (accountId == null)
+            return Unauthorized();
+
+        var unit = await _db.Units
+            .FirstOrDefaultAsync(u => u.MacAddress == mac);
+
+        if (unit == null)
+            return NotFound("Unit not found.");
+
+        unit.AccountId = accountId.Value;
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new UnitDto
+        {
+            Id = unit.Id,
+            MacAddress = unit.MacAddress,
+            UnitName = unit.UnitName,
+            Location = unit.Location
+        });
+    }
+
     private IQueryable<Unit>? GetAccessibleUnitsQuery()
     {
         var query = _db.Units
-            .Include(u => u.Customer)
+            .Include(u => u.Account)
             .AsQueryable();
 
         if (User.IsInRole(nameof(AccountRole.Admin)))
-        {
             return query;
-        }
 
         if (User.IsInRole(nameof(AccountRole.Dealer)))
         {
@@ -229,20 +227,35 @@ public class UnitsController : ControllerBase
             if (dealerId == null)
                 return null;
 
-            return query.Where(u => u.Customer != null && u.Customer.DealerId == dealerId.Value);
+            return query.Where(u =>
+                u.Account != null &&
+                u.Account.DealerId == dealerId.Value);
         }
 
         if (User.IsInRole(nameof(AccountRole.Customer)))
         {
-            var customerId = GetCustomerId();
+            var accountId = GetAccountId();
 
-            if (customerId == null)
+            if (accountId == null)
                 return null;
 
-            return query.Where(u => u.CustomerId == customerId.Value);
+            return query.Where(u => u.AccountId == accountId.Value);
         }
 
         return null;
+    }
+
+    private Guid? GetAccountId()
+    {
+        var accountIdClaim =
+            User.FindFirst("accountId")?.Value ??
+            User.FindFirst("sub")?.Value ??
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(accountIdClaim, out var accountId))
+            return null;
+
+        return accountId;
     }
 
     private Guid? GetDealerId()
@@ -253,15 +266,5 @@ public class UnitsController : ControllerBase
             return null;
 
         return dealerId;
-    }
-
-    private Guid? GetCustomerId()
-    {
-        var customerIdClaim = User.FindFirst("customerId")?.Value;
-
-        if (!Guid.TryParse(customerIdClaim, out var customerId))
-            return null;
-
-        return customerId;
     }
 }

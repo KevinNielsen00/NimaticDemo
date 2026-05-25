@@ -17,4 +17,6 @@ public class Account
 
     public Guid? CustomerId { get; set; }
     public Customer? Customer { get; set; }
+
+    public List<Unit> Units { get; set; } = new();
 }
