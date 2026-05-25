@@ -34,7 +34,9 @@ public class MqttBackgroundService : BackgroundService
             try
             {
                 var payloadString = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-                _logger.LogInformation("MQTT message received: {Payload}", payloadString);
+                _logger.LogInformation("MQTT message received on topic {Topic}: {Payload}",
+                    e.ApplicationMessage.Topic,
+                    payloadString);
 
                 var payload = JsonSerializer.Deserialize<MqttPayload>(payloadString);
 
@@ -53,12 +55,11 @@ public class MqttBackgroundService : BackgroundService
         };
 
         var broker = _configuration["Mqtt:Broker"] ?? "localhost";
-        var topic = _configuration["Mqtt:Topic"] ?? "iot/data";
         var username = _configuration["Mqtt:Username"];
         var password = _configuration["Mqtt:Password"];
 
         var optionsBuilder = new MqttClientOptionsBuilder()
-            .WithTcpServer(broker);
+            .WithTcpServer(broker, 1883);
 
         if (!string.IsNullOrWhiteSpace(username))
         {
@@ -68,10 +69,12 @@ public class MqttBackgroundService : BackgroundService
         var options = optionsBuilder.Build();
 
         await _mqttClient.ConnectAsync(options, stoppingToken);
-        _logger.LogInformation("Connected to MQTT broker.");
+        _logger.LogInformation("Connected to MQTT broker: {Broker}", broker);
 
-        await _mqttClient.SubscribeAsync(topic, cancellationToken: stoppingToken);
-        _logger.LogInformation("Subscribed to topic: {Topic}", topic);
+        await _mqttClient.SubscribeAsync("IOT", cancellationToken: stoppingToken);
+        await _mqttClient.SubscribeAsync("IOT/#", cancellationToken: stoppingToken);
+
+        _logger.LogInformation("Subscribed to topics: IOT and IOT/#");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -105,7 +108,9 @@ public class MqttBackgroundService : BackgroundService
 
             if (!adminAccountExists)
             {
-                _logger.LogWarning("AdminAccountId does not match any account. AdminAccountId: {AdminAccountId}", adminAccountId);
+                _logger.LogWarning(
+                    "AdminAccountId does not match any account. AdminAccountId: {AdminAccountId}",
+                    adminAccountId);
                 return;
             }
 
