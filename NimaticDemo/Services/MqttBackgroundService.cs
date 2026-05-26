@@ -4,6 +4,7 @@ using Backend.Data;
 using Backend.Models;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Backend.Services;
 
@@ -34,8 +35,16 @@ public class MqttBackgroundService : BackgroundService
             try
             {
                 var payloadString = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-                _logger.LogInformation("MQTT message received on topic {Topic}: {Payload}",
+
+                _logger.LogInformation(
+                    "MQTT message received on topic {Topic}: {Payload}",
                     e.ApplicationMessage.Topic,
+                    payloadString);
+
+                payloadString = FixInvalidDevicePayload(payloadString);
+
+                _logger.LogInformation(
+                    "Fixed payload: {Payload}",
                     payloadString);
 
                 var payload = JsonSerializer.Deserialize<MqttPayload>(payloadString);
@@ -69,7 +78,10 @@ public class MqttBackgroundService : BackgroundService
         var options = optionsBuilder.Build();
 
         await _mqttClient.ConnectAsync(options, stoppingToken);
-        _logger.LogInformation("Connected to MQTT broker: {Broker}", broker);
+
+        _logger.LogInformation(
+            "Connected to MQTT broker: {Broker}",
+            broker);
 
         await _mqttClient.SubscribeAsync("IOT", cancellationToken: stoppingToken);
         await _mqttClient.SubscribeAsync("IOT/#", cancellationToken: stoppingToken);
@@ -82,15 +94,22 @@ public class MqttBackgroundService : BackgroundService
         }
     }
 
-    private async Task SaveMeasurementAsync(MqttPayload payload, CancellationToken cancellationToken)
+    private async Task SaveMeasurementAsync(
+        MqttPayload payload,
+        CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
+
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         var mac = payload.GetMacAddress();
 
+        _logger.LogInformation("Processing unit with MAC: {Mac}", mac);
+
         var unit = await db.Units
-            .FirstOrDefaultAsync(u => u.MacAddress == mac, cancellationToken);
+            .FirstOrDefaultAsync(
+                u => u.MacAddress == mac,
+                cancellationToken);
 
         if (unit is null)
         {
@@ -99,18 +118,24 @@ public class MqttBackgroundService : BackgroundService
             if (string.IsNullOrWhiteSpace(adminAccountIdConfig) ||
                 !Guid.TryParse(adminAccountIdConfig, out var adminAccountId))
             {
-                _logger.LogWarning("Unit not found and AdminAccountId is missing/invalid. MAC: {Mac}", mac);
+                _logger.LogWarning(
+                    "Unit not found and AdminAccountId is missing/invalid. MAC: {Mac}",
+                    mac);
+
                 return;
             }
 
             var adminAccountExists = await db.Accounts
-                .AnyAsync(a => a.Id == adminAccountId, cancellationToken);
+                .AnyAsync(
+                    a => a.Id == adminAccountId,
+                    cancellationToken);
 
             if (!adminAccountExists)
             {
                 _logger.LogWarning(
                     "AdminAccountId does not match any account. AdminAccountId: {AdminAccountId}",
                     adminAccountId);
+
                 return;
             }
 
@@ -123,9 +148,12 @@ public class MqttBackgroundService : BackgroundService
             };
 
             db.Units.Add(unit);
+
             await db.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("New unit auto-created and linked to admin. MAC: {Mac}", mac);
+            _logger.LogInformation(
+                "New unit auto-created and linked to admin. MAC: {Mac}",
+                mac);
         }
 
         var measurement = new Measurement
@@ -139,8 +167,19 @@ public class MqttBackgroundService : BackgroundService
         };
 
         db.Measurements.Add(measurement);
+
         await db.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Measurement saved for unit {Mac}", mac);
+        _logger.LogInformation(
+            "Measurement saved for unit {Mac}",
+            mac);
+    }
+
+    private static string FixInvalidDevicePayload(string payload)
+    {
+        return Regex.Replace(
+            payload,
+            "\"D\"\\s*:\\s*([A-Fa-f0-9]+)",
+            "\"D\":\"$1\"");
     }
 }
