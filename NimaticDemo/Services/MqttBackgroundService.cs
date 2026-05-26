@@ -59,7 +59,7 @@ public class MqttBackgroundService : BackgroundService
         var password = _configuration["Mqtt:Password"];
 
         var optionsBuilder = new MqttClientOptionsBuilder()
-            .WithTcpServer(broker, 1883);
+            .WithTcpServer(broker, 1884);
 
         if (!string.IsNullOrWhiteSpace(username))
         {
