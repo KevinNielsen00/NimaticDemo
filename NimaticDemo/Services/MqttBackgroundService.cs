@@ -40,7 +40,7 @@ public class MqttBackgroundService : BackgroundService
 
                 var payload = JsonSerializer.Deserialize<MqttPayload>(payloadString);
 
-                if (payload is null || string.IsNullOrWhiteSpace(payload.D))
+                if (payload is null || string.IsNullOrWhiteSpace(payload.GetMacAddress()))
                 {
                     _logger.LogWarning("Invalid payload received.");
                     return;
@@ -87,7 +87,7 @@ public class MqttBackgroundService : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var mac = payload.D.Trim().ToUpperInvariant();
+        var mac = payload.GetMacAddress();
 
         var unit = await db.Units
             .FirstOrDefaultAsync(u => u.MacAddress == mac, cancellationToken);

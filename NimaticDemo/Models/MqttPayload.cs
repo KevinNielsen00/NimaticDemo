@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Backend.Models;
 
@@ -17,5 +18,10 @@ public class MqttPayload
     public decimal T { get; set; }
 
     [JsonPropertyName("D")]
-    public string D { get; set; } = string.Empty;
+    public JsonElement D { get; set; }
+
+    public string GetMacAddress()
+    {
+        return D.ToString().Trim().ToUpperInvariant();
+    }
 }
