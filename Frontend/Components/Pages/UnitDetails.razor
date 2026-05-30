@@ -44,7 +44,7 @@ else
         <p><b>Depth:</b> @latestMeasurement?.Depth</p>
         <p><b>Restarts:</b> @latestMeasurement?.Restarts</p>
         <p><b>Battery:</b> @latestMeasurement?.Battery</p>
-        <p><b>Temperature:</b> @latestMeasurement?.Temperature</p>
+        <p><b>Temperature:</b> @(latestMeasurement?.Temperature.ToString("0.0")) °C</p>
         <p><b>Measured At:</b> @latestMeasurement?.MeasuredAt.ToLocalTime()</p>
     </div>
 
@@ -73,7 +73,7 @@ else
                     <td>@measurement.Depth</td>
                     <td>@measurement.Restarts</td>
                     <td>@measurement.Battery</td>
-                    <td>@measurement.Temperature</td>
+                    <td>@measurement.Temperature.ToString("0.0") °C</td>
                     <td>@measurement.MeasuredAt.ToLocalTime()</td>
                 </tr>
             }
