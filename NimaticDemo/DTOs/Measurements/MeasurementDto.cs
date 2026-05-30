@@ -7,5 +7,7 @@
         public decimal Battery { get; set; }
         public decimal Temperature { get; set; }
         public DateTime MeasuredAt { get; set; }
+        public double FillPercentage { get; set; }
+        public string LevelStatus { get; set; } = string.Empty;
     }
 }

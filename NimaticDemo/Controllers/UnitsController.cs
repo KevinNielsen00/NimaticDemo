@@ -2,6 +2,7 @@
 using Backend.DTOs.Measurements;
 using Backend.DTOs.Units;
 using Backend.Models;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -88,7 +89,11 @@ public class UnitsController : ControllerBase
                 Restarts = m.Restarts,
                 Battery = m.Battery,
                 Temperature = m.Temperature,
-                MeasuredAt = m.MeasuredAt
+                MeasuredAt = m.MeasuredAt,
+                FillPercentage = Math.Round(
+                BarrelService.CalculateFillPercentage(m.Depth), 1),
+                LevelStatus = BarrelService.GetLevelStatus(
+                BarrelService.CalculateFillPercentage(m.Depth))
             })
             .FirstOrDefaultAsync();
 
@@ -121,7 +126,11 @@ public class UnitsController : ControllerBase
                 Restarts = m.Restarts,
                 Battery = m.Battery,
                 Temperature = m.Temperature,
-                MeasuredAt = m.MeasuredAt
+                MeasuredAt = m.MeasuredAt,
+                FillPercentage = Math.Round(
+                BarrelService.CalculateFillPercentage(m.Depth), 1),
+                LevelStatus = BarrelService.GetLevelStatus(
+                BarrelService.CalculateFillPercentage(m.Depth))
             })
             .ToListAsync();
 

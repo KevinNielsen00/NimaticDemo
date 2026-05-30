@@ -23,6 +23,24 @@ else
 {
     <div class="card mb-4 p-3 shadow-sm">
         <h5>Latest Measurement</h5>
+
+        @if (latestMeasurement is not null)
+        {
+            <div class="barrel-section mb-3">
+                <div class="barrel">
+                    <div class="barrel-fill @GetLevelClass(latestMeasurement.FillPercentage)"
+                         style="height:@latestMeasurement.FillPercentage.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
+                    </div>
+                </div>
+
+                <div>
+                    <h2>@latestMeasurement.FillPercentage.ToString("0")%</h2>
+                    <p class="mb-1"><b>Status:</b> @GetLevelText(latestMeasurement.FillPercentage)</p>
+                    <p class="mb-0"><b>Distance:</b> @latestMeasurement.Depth cm</p>
+                </div>
+            </div>
+        }
+
         <p><b>Depth:</b> @latestMeasurement?.Depth</p>
         <p><b>Restarts:</b> @latestMeasurement?.Restarts</p>
         <p><b>Battery:</b> @latestMeasurement?.Battery</p>
@@ -35,6 +53,7 @@ else
     <table class="table table-striped">
         <thead>
             <tr>
+                <th>Level</th>
                 <th>Depth</th>
                 <th>Restarts</th>
                 <th>Battery</th>
@@ -46,6 +65,11 @@ else
             @foreach (var measurement in measurements)
             {
                 <tr>
+                    <td>
+                        <span class="badge @GetBadgeClass(measurement.FillPercentage)">
+                            @measurement.FillPercentage.ToString("0")%
+                        </span>
+                    </td>
                     <td>@measurement.Depth</td>
                     <td>@measurement.Restarts</td>
                     <td>@measurement.Battery</td>
@@ -56,6 +80,42 @@ else
         </tbody>
     </table>
 }
+
+<style>
+    .barrel-section {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+    }
+
+    .barrel {
+        width: 90px;
+        height: 180px;
+        border: 3px solid #222;
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end;
+        background: #f8f9fa;
+    }
+
+    .barrel-fill {
+        width: 100%;
+        transition: height 0.5s ease;
+    }
+
+    .level-red {
+        background: #dc3545;
+    }
+
+    .level-yellow {
+        background: #ffc107;
+    }
+
+    .level-green {
+        background: #198754;
+    }
+</style>
 
 @code {
     [Parameter]
@@ -84,5 +144,26 @@ else
         {
             isLoading = false;
         }
+    }
+
+    private string GetLevelClass(double percentage)
+    {
+        if (percentage < 15) return "level-red";
+        if (percentage <= 75) return "level-yellow";
+        return "level-green";
+    }
+
+    private string GetBadgeClass(double percentage)
+    {
+        if (percentage < 15) return "bg-danger";
+        if (percentage <= 75) return "bg-warning text-dark";
+        return "bg-success";
+    }
+
+    private string GetLevelText(double percentage)
+    {
+        if (percentage < 15) return "Lavt niveau";
+        if (percentage <= 75) return "Mellem niveau";
+        return "Godt niveau";
     }
 }
