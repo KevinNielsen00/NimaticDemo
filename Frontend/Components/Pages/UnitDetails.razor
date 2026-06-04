@@ -5,6 +5,7 @@
 @implements IAsyncDisposable
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h3>Unit Details</h3>
 
@@ -50,7 +51,7 @@ else
         <p><b>Temperature:</b> @(latestMeasurement?.Temperature.ToString("0.0")) °C</p>
         <p>
             <b>Measured At:</b>
-            @(latestMeasurement is null ? "" : FormatMeasuredAt(latestMeasurement.MeasuredAt))
+            @latestMeasurementTime
         </p>
     </div>
 
@@ -80,7 +81,7 @@ else
                     <td>@measurement.Restarts</td>
                     <td>@measurement.Battery</td>
                     <td>@measurement.Temperature.ToString("0.0") °C</td>
-                    <td>@FormatMeasuredAt(measurement.MeasuredAt)</td>
+                    <td>@measurementTimes.GetValueOrDefault(measurement.MeasuredAt)</td>
                 </tr>
             }
         </tbody>
@@ -132,6 +133,8 @@ else
     private bool isLoading = true;
     private string? errorMessage;
     private HubConnection? hubConnection;
+    private string latestMeasurementTime = "";
+    private Dictionary<DateTime, string> measurementTimes = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -163,6 +166,20 @@ else
         {
             measurements = await ApiService.GetMeasurementsAsync(Id);
             latestMeasurement = measurements.FirstOrDefault();
+
+            measurementTimes.Clear();
+
+            foreach (var measurement in measurements)
+            {
+                measurementTimes[measurement.MeasuredAt] =
+                    await FormatMeasuredAtAsync(measurement.MeasuredAt);
+            }
+
+            if (latestMeasurement is not null)
+            {
+                latestMeasurementTime =
+                    await FormatMeasuredAtAsync(latestMeasurement.MeasuredAt);
+            }
         }
         catch (Exception ex)
         {
@@ -203,12 +220,12 @@ else
         return "High level";
     }
 
-    private string FormatMeasuredAt(DateTime measuredAt)
+    private async Task<string> FormatMeasuredAtAsync(DateTime measuredAt)
     {
         var utcTime = DateTime.SpecifyKind(measuredAt, DateTimeKind.Utc);
 
-        return utcTime
-            .ToLocalTime()
-            .ToString("dd/MM/yyyy HH:mm:ss");
+        return await JS.InvokeAsync<string>(
+            "timeZoneManager.formatDateTime",
+            utcTime.ToString("O"));
     }
 }
