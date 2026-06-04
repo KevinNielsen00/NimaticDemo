@@ -64,15 +64,16 @@ h1:focus {
     --text-color: #212529;
     --card-bg: #ffffff;
     --border-color: #dee2e6;
-    --table-bg: #ffffff;
 }
 
-body.dark-mode {
+html.dark-mode,
+html.dark-mode body {
     --bg-color: #121212;
     --text-color: #f1f1f1;
     --card-bg: #1e1e1e;
     --border-color: #333;
-    --table-bg: #1e1e1e;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 body {
@@ -80,31 +81,39 @@ body {
     color: var(--text-color);
 }
 
-.card {
+html.dark-mode .content,
+html.dark-mode main,
+html.dark-mode article,
+html.dark-mode .page,
+html.dark-mode .top-row {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+html.dark-mode .card {
     background-color: var(--card-bg);
     color: var(--text-color);
     border-color: var(--border-color);
 }
 
-.table {
-    color: var(--text-color);
-}
-
-.table-striped > tbody > tr:nth-of-type(odd) > * {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-color);
-}
-
-.navbar,
-.sidebar {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-}
-
-input,
-select,
-textarea {
+html.dark-mode .table,
+html.dark-mode .table > :not(caption) > * > * {
     background-color: var(--card-bg);
     color: var(--text-color);
     border-color: var(--border-color);
+}
+
+html.dark-mode input,
+html.dark-mode select,
+html.dark-mode textarea,
+html.dark-mode .form-control {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+html.dark-mode .navbar,
+html.dark-mode .sidebar {
+    background-color: var(--card-bg);
+    color: var(--text-color);
 }
