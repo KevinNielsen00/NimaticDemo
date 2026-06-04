@@ -26,13 +26,32 @@ else
     <div class="row">
         @foreach (var unit in units)
         {
+            var latest = latestMeasurements.GetValueOrDefault(unit.Id);
+
             <div class="col-md-4 mb-3">
                 <div class="card shadow-sm p-3">
                     <h5>@(unit.UnitName ?? "Unnamed Unit")</h5>
-                    <p><b>MAC:</b> @unit.MacAddress</p>
-                    <p><b>Location:</b> @unit.Location</p>
 
-                    <button class="btn btn-primary"
+                    @if (latest is null)
+                    {
+                        <span class="badge bg-secondary mb-2">No data</span>
+                        <p>No measurements yet</p>
+                    }
+                    else
+                    {
+                        <span class="badge @GetStatusBadgeClass(latest.FillPercentage) mb-2">
+                            @GetStatusText(latest.FillPercentage)
+                        </span>
+
+                        <h2>@latest.FillPercentage.ToString("0")%</h2>
+
+                        <p class="mb-1">
+                            <b>Last measured:</b>
+                            @latest.MeasuredAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                    }
+
+                    <button class="btn btn-primary mt-2"
                             @onclick="() => GoToUnit(unit.Id)">
                         View Data
                     </button>
@@ -44,10 +63,11 @@ else
 
 @code {
     private List<UnitDto> units = new();
+    private Dictionary<Guid, MeasurementDto?> latestMeasurements = new();
+
     private bool isLoading = true;
     private string? errorMessage;
     private bool loaded;
-
     private HubConnection? hubConnection;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -68,7 +88,8 @@ else
             }
 
             ApiService.SetToken(token);
-            units = await ApiService.GetUnitsAsync();
+
+            await LoadDashboardData();
 
             hubConnection = new HubConnectionBuilder()
                 .WithUrl("http://207.127.93.56:5000/measurementHub")
@@ -77,7 +98,7 @@ else
 
             hubConnection.On<Guid>("MeasurementUpdated", async unitId =>
             {
-                units = await ApiService.GetUnitsAsync();
+                await LoadLatestMeasurementForUnit(unitId);
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -94,12 +115,36 @@ else
         }
     }
 
-    public async ValueTask DisposeAsync()
+    private async Task LoadDashboardData()
     {
-        if (hubConnection is not null)
+        units = await ApiService.GetUnitsAsync();
+
+        latestMeasurements.Clear();
+
+        foreach (var unit in units)
         {
-            await hubConnection.DisposeAsync();
+            await LoadLatestMeasurementForUnit(unit.Id);
         }
+    }
+
+    private async Task LoadLatestMeasurementForUnit(Guid unitId)
+    {
+        var measurements = await ApiService.GetMeasurementsAsync(unitId);
+        latestMeasurements[unitId] = measurements.FirstOrDefault();
+    }
+
+    private string GetStatusBadgeClass(double percentage)
+    {
+        if (percentage < 15) return "bg-danger";
+        if (percentage <= 35) return "bg-warning text-dark";
+        return "bg-success";
+    }
+
+    private string GetStatusText(double percentage)
+    {
+        if (percentage < 15) return "Low level";
+        if (percentage <= 35) return "Medium level";
+        return "Good level";
     }
 
     private void GoToUnit(Guid unitId)
@@ -107,4 +152,11 @@ else
         Navigation.NavigateTo($"/unit/{unitId}");
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
 }
