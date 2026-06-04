@@ -34,7 +34,9 @@ else if (!string.IsNullOrWhiteSpace(message))
                    type="checkbox"
                    checked="@settings.DarkMode"
                    @onchange="ToggleDarkMode" />
-            <label class="form-check-label">Enable dark mode</label>
+            <label class="form-check-label">
+                @(settings.DarkMode ? "☀️ Light Mode" : "🌙 Dark Mode")
+            </label>
         </div>
     </div>
 

@@ -27,6 +27,8 @@ document.addEventListener("DOMContentLoaded", function () {
     window.themeManager.loadDarkMode();
 });
 
-Blazor?.addEventListener?.("enhancedload", function () {
-    window.themeManager.loadDarkMode();
-});
+if (window.Blazor) {
+    Blazor.addEventListener?.("enhancedload", function () {
+        window.themeManager.loadDarkMode();
+    });
+}

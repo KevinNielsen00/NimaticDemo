@@ -126,3 +126,13 @@ html.dark-mode label,
 html.dark-mode b {
     color: var(--text-color) !important;
 }
+
+body,
+.card,
+.table,
+.sidebar,
+.top-row,
+.form-control,
+.btn {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
