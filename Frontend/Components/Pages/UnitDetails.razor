@@ -135,7 +135,7 @@ else
         await LoadMeasurementsAsync();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://207.127.93.56:5000/measurementHub")
+            .WithUrl("http://207.127.93.56:5000/measurementHub")
             .WithAutomaticReconnect()
             .Build();
 
