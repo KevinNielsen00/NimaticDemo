@@ -43,7 +43,11 @@ else
                             @GetStatusText(latest.FillPercentage)
                         </span>
 
-                        <h2>@latest.FillPercentage.ToString("0")%</h2>
+                        <h2>@latest.FillPercentage.ToString("0")% Full</h2>
+
+                        <p class="mb-1">
+                            <b>Status:</b> @GetStatusDescription(latest.FillPercentage)
+                        </p>
 
                         <p class="mb-1">
                             <b>Last measured:</b>
@@ -142,9 +146,9 @@ else
 
     private string GetStatusText(double percentage)
     {
-        if (percentage < 15) return "Low level";
-        if (percentage <= 35) return "Medium level";
-        return "Good level";
+        if (percentage < 15) return "Critical";
+        if (percentage <= 35) return "Needs Attention";
+        return "Good";
     }
 
     private void GoToUnit(Guid unitId)
@@ -158,5 +162,16 @@ else
         {
             await hubConnection.DisposeAsync();
         }
+    }
+
+    private string GetStatusDescription(double percentage)
+    {
+        if (percentage < 15)
+            return "Barrel is almost empty";
+
+        if (percentage <= 35)
+            return "Barrel is getting low";
+
+        return "Barrel level is good";
     }
 }
