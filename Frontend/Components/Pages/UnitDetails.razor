@@ -1,11 +1,11 @@
 ﻿@page "/unit/{Id:guid}"
 @using Frontend.Models
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Frontend.Services.ApiService ApiService
-@implements IAsyncDisposable
-@using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.SignalR.Client
 
 <h3>Unit Details</h3>
 
@@ -49,6 +49,7 @@ else
         <p><b>Restarts:</b> @latestMeasurement?.Restarts</p>
         <p><b>Battery:</b> @latestMeasurement?.Battery</p>
         <p><b>Temperature:</b> @(latestMeasurement?.Temperature.ToString("0.0")) °C</p>
+
         <p>
             <b>Measured At:</b>
             @latestMeasurementTime
@@ -130,14 +131,23 @@ else
 
     private List<MeasurementDto> measurements = new();
     private MeasurementDto? latestMeasurement;
+
     private bool isLoading = true;
     private string? errorMessage;
+    private bool loaded;
+
     private HubConnection? hubConnection;
+
     private string latestMeasurementTime = "";
     private Dictionary<DateTime, string> measurementTimes = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender || loaded)
+            return;
+
+        loaded = true;
+
         await LoadMeasurementsAsync();
 
         hubConnection = new HubConnectionBuilder()
@@ -149,8 +159,16 @@ else
         {
             return InvokeAsync(async () =>
             {
+                await JS.InvokeVoidAsync(
+                    "console.log",
+                    $"MeasurementUpdated received in UnitDetails: {unitId}");
+
                 if (unitId == Id)
                 {
+                    await JS.InvokeVoidAsync(
+                        "console.log",
+                        "UnitDetails unit matched. Reloading measurements.");
+
                     await LoadMeasurementsAsync();
                     StateHasChanged();
                 }
@@ -158,6 +176,12 @@ else
         });
 
         await hubConnection.StartAsync();
+
+        await JS.InvokeVoidAsync(
+            "console.log",
+            "MeasurementHub connected from UnitDetails");
+
+        StateHasChanged();
     }
 
     private async Task LoadMeasurementsAsync()
@@ -178,11 +202,9 @@ else
                     await FormatMeasuredAtAsync(measurement.MeasuredAt);
             }
 
-            if (latestMeasurement is not null)
-            {
-                latestMeasurementTime =
-                    await FormatMeasuredAtAsync(latestMeasurement.MeasuredAt);
-            }
+            latestMeasurementTime = latestMeasurement is null
+                ? ""
+                : await FormatMeasuredAtAsync(latestMeasurement.MeasuredAt);
         }
         catch (Exception ex)
         {
