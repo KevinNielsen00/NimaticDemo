@@ -7,8 +7,9 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="BlazorJWT.BlazoredLocalStorage" Version="0.1.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="BlazorJWT.BlazoredLocalStorage" Version="0.1.3" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0-preview.7.*" />
+	</ItemGroup>
 
 </Project>

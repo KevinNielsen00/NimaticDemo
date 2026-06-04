@@ -4,6 +4,8 @@
 @inject Frontend.Services.ApiService ApiService
 @inject Frontend.Services.AuthService AuthService
 @inject NavigationManager Navigation
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.SignalR.Client
 
 <h3>Dashboard</h3>
 
@@ -46,6 +48,8 @@ else
     private string? errorMessage;
     private bool loaded;
 
+    private HubConnection? hubConnection;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || loaded)
@@ -65,6 +69,19 @@ else
 
             ApiService.SetToken(token);
             units = await ApiService.GetUnitsAsync();
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("https://207.127.93.56:5000/measurementHub")
+                .WithAutomaticReconnect()
+                .Build();
+
+            hubConnection.On<Guid>("MeasurementUpdated", async unitId =>
+            {
+                units = await ApiService.GetUnitsAsync();
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
         }
         catch (Exception ex)
         {
@@ -77,8 +94,17 @@ else
         }
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
     private void GoToUnit(Guid unitId)
     {
         Navigation.NavigateTo($"/unit/{unitId}");
     }
+
 }

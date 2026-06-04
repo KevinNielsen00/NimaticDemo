@@ -2,6 +2,9 @@
 @using Frontend.Models
 @rendermode InteractiveServer
 @inject Frontend.Services.ApiService ApiService
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager Navigation
 
 <h3>Unit Details</h3>
 
@@ -125,8 +128,30 @@ else
     private MeasurementDto? latestMeasurement;
     private bool isLoading = true;
     private string? errorMessage;
+    private HubConnection? hubConnection;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMeasurementsAsync();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://207.127.93.56:5000/measurementHub")
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<Guid>("MeasurementUpdated", async unitId =>
+        {
+            if (unitId == Id)
+            {
+                await LoadMeasurementsAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private async Task LoadMeasurementsAsync()
     {
         isLoading = true;
         errorMessage = null;
@@ -143,6 +168,14 @@ else
         finally
         {
             isLoading = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
         }
     }
 

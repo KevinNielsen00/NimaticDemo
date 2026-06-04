@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MQTTnet;
-using Backend.Data;
+﻿using Backend.Data;
+using Backend.Hubs;
 using Backend.Models;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using MQTTnet;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,16 +15,19 @@ public class MqttBackgroundService : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
     private readonly ILogger<MqttBackgroundService> _logger;
+    private readonly IHubContext<MeasurementHub> _hubContext;
     private IMqttClient? _mqttClient;
 
     public MqttBackgroundService(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
-        ILogger<MqttBackgroundService> logger)
+        ILogger<MqttBackgroundService> logger,
+        IHubContext<MeasurementHub> hubContext)
     {
         _scopeFactory = scopeFactory;
         _configuration = configuration;
         _logger = logger;
+        _hubContext = hubContext;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -150,6 +155,11 @@ public class MqttBackgroundService : BackgroundService
             db.Units.Add(unit);
 
             await db.SaveChangesAsync(cancellationToken);
+
+            await _hubContext.Clients.All.SendAsync(
+                "MeasurementUpdated",
+                unit.Id,
+                cancellationToken);
 
             _logger.LogInformation(
                 "New unit auto-created and linked to admin. MAC: {Mac}",
