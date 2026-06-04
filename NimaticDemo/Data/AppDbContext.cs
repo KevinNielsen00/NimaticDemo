@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Unit> Units => Set<Unit>();
     public DbSet<Measurement> Measurements => Set<Measurement>();
     public DbSet<UserSettings> UserSettings => Set<UserSettings>();
+    public DbSet<NotificationSettings> NotificationSettings => Set<NotificationSettings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +69,16 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserSettings>()
+            .HasIndex(s => s.AccountId)
+            .IsUnique();
+
+        modelBuilder.Entity<NotificationSettings>()
+            .HasOne(s => s.Account)
+            .WithOne()
+            .HasForeignKey<NotificationSettings>(s => s.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NotificationSettings>()
             .HasIndex(s => s.AccountId)
             .IsUnique();
     }

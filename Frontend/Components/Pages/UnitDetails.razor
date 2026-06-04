@@ -145,13 +145,16 @@ else
             .WithAutomaticReconnect()
             .Build();
 
-        hubConnection.On<Guid>("MeasurementUpdated", async unitId =>
+        hubConnection.On<Guid>("MeasurementUpdated", unitId =>
         {
-            if (unitId == Id)
+            return InvokeAsync(async () =>
             {
-                await LoadMeasurementsAsync();
-                await InvokeAsync(StateHasChanged);
-            }
+                if (unitId == Id)
+                {
+                    await LoadMeasurementsAsync();
+                    StateHasChanged();
+                }
+            });
         });
 
         await hubConnection.StartAsync();

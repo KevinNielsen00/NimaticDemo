@@ -100,10 +100,13 @@ else
                 .WithAutomaticReconnect()
                 .Build();
 
-            hubConnection.On<Guid>("MeasurementUpdated", async unitId =>
+            hubConnection.On<Guid>("MeasurementUpdated", unitId =>
             {
-                await LoadLatestMeasurementForUnit(unitId);
-                await InvokeAsync(StateHasChanged);
+                return InvokeAsync(async () =>
+                {
+                    await LoadLatestMeasurementForUnit(unitId);
+                    StateHasChanged();
+                });
             });
 
             await hubConnection.StartAsync();

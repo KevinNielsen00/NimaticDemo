@@ -109,6 +109,8 @@ public class MqttBackgroundService : BackgroundService
 
         var mac = payload.GetMacAddress();
 
+        var emailService = scope.ServiceProvider.GetRequiredService<EmailService>();
+
         _logger.LogInformation("Processing unit with MAC: {Mac}", mac);
 
         var unit = await db.Units
