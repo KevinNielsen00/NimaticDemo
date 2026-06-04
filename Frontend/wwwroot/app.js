@@ -32,3 +32,27 @@ if (window.Blazor) {
         window.themeManager.loadDarkMode();
     });
 }
+
+window.timeZoneManager = {
+    setTimeZone: function (timeZone) {
+        localStorage.setItem("timeZone", timeZone);
+    },
+
+    loadTimeZone: function () {
+        return localStorage.getItem("timeZone") || "Europe/Copenhagen";
+    },
+
+    formatDateTime: function (utcDateString) {
+        const timeZone = localStorage.getItem("timeZone") || "Europe/Copenhagen";
+
+        return new Date(utcDateString).toLocaleString("da-DK", {
+            timeZone: timeZone,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+    }
+};

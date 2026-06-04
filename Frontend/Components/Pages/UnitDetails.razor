@@ -48,7 +48,10 @@ else
         <p><b>Restarts:</b> @latestMeasurement?.Restarts</p>
         <p><b>Battery:</b> @latestMeasurement?.Battery</p>
         <p><b>Temperature:</b> @(latestMeasurement?.Temperature.ToString("0.0")) °C</p>
-        <p><b>Measured At:</b> @latestMeasurement?.MeasuredAt.ToLocalTime()</p>
+        <p>
+            <b>Measured At:</b>
+            @(latestMeasurement is null ? "" : FormatMeasuredAt(latestMeasurement.MeasuredAt))
+        </p>
     </div>
 
     <h5>Measurement History</h5>
@@ -77,7 +80,7 @@ else
                     <td>@measurement.Restarts</td>
                     <td>@measurement.Battery</td>
                     <td>@measurement.Temperature.ToString("0.0") °C</td>
-                    <td>@measurement.MeasuredAt.ToLocalTime()</td>
+                    <td>@FormatMeasuredAt(measurement.MeasuredAt)</td>
                 </tr>
             }
         </tbody>
@@ -198,5 +201,14 @@ else
         if (percentage < 15) return "Low level";
         if (percentage <= 35) return "Medium level";
         return "High level";
+    }
+
+    private string FormatMeasuredAt(DateTime measuredAt)
+    {
+        var utcTime = DateTime.SpecifyKind(measuredAt, DateTimeKind.Utc);
+
+        return utcTime
+            .ToLocalTime()
+            .ToString("dd/MM/yyyy HH:mm:ss");
     }
 }
