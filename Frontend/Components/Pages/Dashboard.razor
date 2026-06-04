@@ -50,8 +50,8 @@ else
                         </p>
 
                         <p class="mb-1">
-                            <b>Last measured:</b>
-                            @latest.MeasuredAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                            <b>Last update:</b>
+                            @GetTimeAgo(latest.MeasuredAt)
                         </p>
                     }
 
@@ -173,5 +173,21 @@ else
             return "Barrel is getting low";
 
         return "Barrel level is good";
+    }
+
+    private string GetTimeAgo(DateTime measuredAt)
+    {
+        var span = DateTime.UtcNow - measuredAt;
+
+        if (span.TotalSeconds < 60)
+            return $"{(int)span.TotalSeconds} seconds ago";
+
+        if (span.TotalMinutes < 60)
+            return $"{(int)span.TotalMinutes} minute{((int)span.TotalMinutes == 1 ? "" : "s")} ago";
+
+        if (span.TotalHours < 24)
+            return $"{(int)span.TotalHours} hour{((int)span.TotalHours == 1 ? "" : "s")} ago";
+
+        return $"{(int)span.TotalDays} day{((int)span.TotalDays == 1 ? "" : "s")} ago";
     }
 }
