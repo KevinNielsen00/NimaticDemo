@@ -2,6 +2,7 @@
 @using Frontend.Models
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Frontend.Services.ApiService ApiService
+@inject Frontend.Services.AuthService AuthService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @implements IAsyncDisposable
@@ -148,6 +149,16 @@ else
 
         loaded = true;
 
+        var token = await AuthService.GetTokenAsync();
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+            return;
+        }
+
+        ApiService.SetToken(token);
+
         await LoadMeasurementsAsync();
 
         hubConnection = new HubConnectionBuilder()
@@ -159,11 +170,8 @@ else
         {
             return InvokeAsync(async () =>
             {
-                Console.WriteLine($"MeasurementUpdated received in UnitDetails: {unitId}");
-
                 if (unitId == Id)
                 {
-                    Console.WriteLine("UnitDetails unit matched. Reloading measurements.");
                     await LoadMeasurementsAsync();
                     StateHasChanged();
                 }

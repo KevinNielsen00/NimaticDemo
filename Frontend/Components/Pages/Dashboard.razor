@@ -102,7 +102,6 @@ else
 
             hubConnection.On<Guid>("MeasurementUpdated", unitId =>
             {
-                Console.WriteLine($"SignalR received in Dashboard: {unitId}");
 
                 return InvokeAsync(async () =>
                 {
@@ -112,7 +111,6 @@ else
             });
 
             await hubConnection.StartAsync();
-            Console.WriteLine("SignalR connected");
         }
         catch (Exception ex)
         {
