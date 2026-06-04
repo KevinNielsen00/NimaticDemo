@@ -4,6 +4,7 @@
 @inject Frontend.Services.ApiService ApiService
 @inject Frontend.Services.AuthService AuthService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h3>Settings</h3>
 
@@ -29,7 +30,10 @@ else if (!string.IsNullOrWhiteSpace(message))
         <h5>Appearance</h5>
 
         <div class="form-check">
-            <input class="form-check-input" type="checkbox" @bind="settings.DarkMode" />
+            <input class="form-check-input"
+                   type="checkbox"
+                   checked="@settings.DarkMode"
+                   @onchange="ToggleDarkMode" />
             <label class="form-check-label">Enable dark mode</label>
         </div>
     </div>
@@ -84,6 +88,7 @@ else if (!string.IsNullOrWhiteSpace(message))
 
             ApiService.SetToken(token);
             settings = await ApiService.GetSettingsAsync();
+            await JS.InvokeVoidAsync("themeManager.setDarkMode", settings.DarkMode);
         }
         catch (Exception ex)
         {
@@ -129,5 +134,15 @@ else if (!string.IsNullOrWhiteSpace(message))
         {
             errorMessage = ex.Message;
         }
+    }
+
+    private async Task ToggleDarkMode(ChangeEventArgs e)
+    {
+        if (settings is null)
+            return;
+
+        settings.DarkMode = (bool)e.Value!;
+
+        await JS.InvokeVoidAsync("themeManager.setDarkMode", settings.DarkMode);
     }
 }
