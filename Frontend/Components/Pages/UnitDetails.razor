@@ -159,16 +159,11 @@ else
         {
             return InvokeAsync(async () =>
             {
-                await JS.InvokeVoidAsync(
-                    "console.log",
-                    $"MeasurementUpdated received in UnitDetails: {unitId}");
+                Console.WriteLine($"MeasurementUpdated received in UnitDetails: {unitId}");
 
                 if (unitId == Id)
                 {
-                    await JS.InvokeVoidAsync(
-                        "console.log",
-                        "UnitDetails unit matched. Reloading measurements.");
-
+                    Console.WriteLine("UnitDetails unit matched. Reloading measurements.");
                     await LoadMeasurementsAsync();
                     StateHasChanged();
                 }
