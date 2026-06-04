@@ -67,13 +67,19 @@ h1:focus {
 }
 
 html.dark-mode,
-html.dark-mode body {
+html.dark-mode body,
+html.dark-mode .page,
+html.dark-mode main,
+html.dark-mode article,
+html.dark-mode .content,
+html.dark-mode .container,
+html.dark-mode .container-fluid {
     --bg-color: #121212;
     --text-color: #f1f1f1;
     --card-bg: #1e1e1e;
     --border-color: #333;
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: var(--bg-color) !important;
+    color: var(--text-color) !important;
 }
 
 body {
@@ -81,39 +87,42 @@ body {
     color: var(--text-color);
 }
 
-html.dark-mode .content,
-html.dark-mode main,
-html.dark-mode article,
-html.dark-mode .page,
-html.dark-mode .top-row {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-}
-
-html.dark-mode .card {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border-color: var(--border-color);
+html.dark-mode .card,
+html.dark-mode .top-row,
+html.dark-mode .sidebar,
+html.dark-mode .navbar {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 html.dark-mode .table,
+html.dark-mode .table th,
+html.dark-mode .table td,
 html.dark-mode .table > :not(caption) > * > * {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
 }
 
 html.dark-mode input,
 html.dark-mode select,
 html.dark-mode textarea,
-html.dark-mode .form-control {
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border-color: var(--border-color);
+html.dark-mode .form-control,
+html.dark-mode .form-check-input {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: #444 !important;
 }
 
-html.dark-mode .navbar,
-html.dark-mode .sidebar {
-    background-color: var(--card-bg);
-    color: var(--text-color);
+html.dark-mode h1,
+html.dark-mode h2,
+html.dark-mode h3,
+html.dark-mode h4,
+html.dark-mode h5,
+html.dark-mode h6,
+html.dark-mode p,
+html.dark-mode label,
+html.dark-mode b {
+    color: var(--text-color) !important;
 }
