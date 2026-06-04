@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject Frontend.Services.AuthService AuthService
 @inject Frontend.Services.ApiService ApiService
+@inject IJSRuntime JS
 
 <div class="page">
     <div class="sidebar">
@@ -27,6 +28,8 @@
 @code {
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await JS.InvokeVoidAsync("themeManager.loadDarkMode");
+
         if (!firstRender)
             return;
 
@@ -39,3 +42,4 @@
         }
     }
 }
+
