@@ -182,21 +182,21 @@ else
     private string GetLevelClass(double percentage)
     {
         if (percentage < 15) return "level-red";
-        if (percentage <= 75) return "level-yellow";
+        if (percentage <= 35) return "level-yellow";
         return "level-green";
     }
 
     private string GetBadgeClass(double percentage)
     {
         if (percentage < 15) return "bg-danger";
-        if (percentage <= 75) return "bg-warning text-dark";
+        if (percentage <= 35) return "bg-warning text-dark";
         return "bg-success";
     }
 
     private string GetLevelText(double percentage)
     {
         if (percentage < 15) return "Low level";
-        if (percentage <= 75) return "Medium level";
+        if (percentage <= 35) return "Medium level";
         return "High level";
     }
 }
