@@ -185,6 +185,16 @@ public class MqttBackgroundService : BackgroundService
 
         await db.SaveChangesAsync(cancellationToken);
 
+
+        _logger.LogInformation(
+            "SIGNALR TEST - Sending MeasurementUpdated for UnitId: {UnitId}",
+            unit.Id);
+
+        await _hubContext.Clients.All.SendAsync(
+            "MeasurementUpdated",
+            unit.Id,
+            cancellationToken);
+
         _logger.LogInformation(
             "Measurement saved for unit {Mac}",
             mac);
