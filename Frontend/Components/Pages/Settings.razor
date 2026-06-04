@@ -26,8 +26,10 @@ else if (!string.IsNullOrWhiteSpace(message))
         </button>
     </div>
 
-    <div class="mt-3">
-        <label class="form-label">Timezone</label>
+    <div class="card p-3 mb-3">
+        <h5>Timezone</h5>
+
+        <label class="form-label">Select timezone</label>
         <select class="form-select" @bind="selectedTimeZone" @bind:after="SaveTimeZone">
             <option value="Europe/Copenhagen">Europe/Copenhagen</option>
             <option value="UTC">UTC</option>
