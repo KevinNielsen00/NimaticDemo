@@ -11,7 +11,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped(sp =>
     new HttpClient
     {
-        BaseAddress = new Uri("http://207.127.93.56:5000/")
+        BaseAddress = new Uri("http://91.98.30.56:5000/")
     });
 
 builder.Services.AddScoped<ApiService>();
