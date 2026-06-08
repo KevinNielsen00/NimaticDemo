@@ -162,10 +162,9 @@ else
         await LoadMeasurementsAsync();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl("http://207.127.93.56:5000/measurementHub")
+            .WithUrl("http://91.98.30.56:5000/measurementHub")
             .WithAutomaticReconnect()
             .Build();
-
         hubConnection.On<Guid>("MeasurementUpdated", unitId =>
         {
             return InvokeAsync(async () =>
