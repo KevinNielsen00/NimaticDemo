@@ -1,4 +1,29 @@
 services:
+  postgres:
+    image: postgres:17
+    container_name: nimatic-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: nimatic-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
   backend:
     build:
       context: ./NimaticDemo
@@ -9,15 +34,18 @@ services:
       - .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Host=host.containers.internal;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Jwt__Key: ${JWT_KEY}
       Jwt__Issuer: Backend
       Jwt__Audience: Frontend
-      Mqtt__Broker: ${MQTT_BROKER}
+      Mqtt__Broker: mosquitto
       Mqtt__Topic: ${MQTT_TOPIC}
       Mqtt__Username: ${MQTT_USERNAME}
       Mqtt__Password: ${MQTT_PASSWORD}
       DefaultCustomerId: ${DEFAULT_CUSTOMER_ID}
+    depends_on:
+      - postgres
+      - mosquitto
     restart: unless-stopped
 
   frontend:
@@ -34,3 +62,6 @@ services:
     ports:
       - "1883:1883"
     restart: unless-stopped
+
+volumes:
+  postgres_data:
