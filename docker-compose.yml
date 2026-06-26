@@ -65,3 +65,4 @@ services:
 
 volumes:
   postgres_data:
+    name: nimaticdemo_postgres_data
