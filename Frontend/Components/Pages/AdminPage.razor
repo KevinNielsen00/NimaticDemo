@@ -138,7 +138,8 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
+        if (firstRender)
+            return;
 
         loading = true;
         StateHasChanged();
@@ -162,16 +163,16 @@ else
         }
         catch (HttpRequestException ex)
         {
+            // Handle 401 explicitly
             if (ex.Message.Contains("401"))
             {
                 isAuthorized = false;
                 await AuthService.LogoutAsync();
                 Nav.NavigateTo("/login");
+                return;
             }
-            else
-            {
-                dealerMsg = ex.Message;
-            }
+
+            dealerMsg = ex.Message;
         }
         finally
         {
