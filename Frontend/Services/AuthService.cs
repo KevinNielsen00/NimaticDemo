@@ -56,4 +56,18 @@ public class AuthService
         await _localStorage.RemoveItemAsync(TOKEN_KEY);
         _apiService.SetToken(null);
     }
+
+    public async Task ChangePasswordAsync(ChangePasswordDto dto)
+    {
+        var token = await GetTokenAsync();
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            _apiService.SetToken(token);
+        }
+
+        var response = await _httpClient.PutAsJsonAsync("api/auth/change-password", dto);
+        response.EnsureSuccessStatusCode();
+
+        // Clear local marker if needed: after changing password backend clears PasswordResetRequired.
+    }
 }

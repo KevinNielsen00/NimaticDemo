@@ -2,8 +2,10 @@
 using Backend.DTOs.Auth;
 using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Backend.Controllers;
 
@@ -55,7 +57,8 @@ public class AuthController : ControllerBase
         return Ok(new AuthResponseDto
         {
             Token = token,
-            Email = account.Email
+            Email = account.Email,
+            MustChangePassword = account.PasswordResetRequired
         });
     }
 
@@ -80,7 +83,38 @@ public class AuthController : ControllerBase
         return Ok(new AuthResponseDto
         {
             Token = token,
-            Email = account.Email
+            Email = account.Email,
+            MustChangePassword = account.PasswordResetRequired
         });
+    }
+
+    [Authorize]
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub);
+
+        if (string.IsNullOrWhiteSpace(sub) || !Guid.TryParse(sub, out var userId))
+            return Unauthorized();
+
+        var account = await _db.Accounts.FindAsync(userId);
+        if (account == null)
+            return Unauthorized();
+
+        if (!account.PasswordResetRequired)
+        {
+            if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
+                return BadRequest("Current password required.");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, account.PasswordHash))
+                return Unauthorized("Current password incorrect.");
+        }
+
+        account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        account.PasswordResetRequired = false;
+
+        await _db.SaveChangesAsync();
+        return NoContent();
     }
 }

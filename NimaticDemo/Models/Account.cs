@@ -19,4 +19,6 @@ public class Account
     public Customer? Customer { get; set; }
 
     public List<Unit> Units { get; set; } = new();
+
+    public bool PasswordResetRequired { get; set; } = false;
 }
