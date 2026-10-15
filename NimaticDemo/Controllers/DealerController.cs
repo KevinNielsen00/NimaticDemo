@@ -20,7 +20,6 @@ public class DealerController : ControllerBase
         _db = db;
     }
 
-    // Helper: hent dealerId fra token
     private Guid? GetDealerId()
     {
         var claim = User.FindFirst("dealerId")?.Value;
@@ -34,18 +33,26 @@ public class DealerController : ControllerBase
         var dealerId = GetDealerId();
         if (dealerId == null) return Forbid();
 
-        var customer = new Customer
-        {
-            Name = dto.Name,
-            DealerId = dealerId.Value
-        };
-
+        var customer = new Customer { Name = dto.Name, DealerId = dealerId.Value };
         _db.Customers.Add(customer);
         await _db.SaveChangesAsync();
         return Ok(customer);
     }
 
-    // Dealer kan oprette kunde-konti under sin dealer
+    [HttpGet("customers")]
+    public async Task<IActionResult> GetCustomers()
+    {
+        var dealerId = GetDealerId();
+        if (dealerId == null) return Forbid();
+
+        var customers = await _db.Customers
+            .Where(c => c.DealerId == dealerId.Value)
+            .Select(c => new { c.Id, c.Name, c.DealerId })
+            .ToListAsync();
+
+        return Ok(customers);
+    }
+
     [HttpPost("accounts")]
     public async Task<IActionResult> CreateCustomerAccount([FromBody] CreateAccountDto dto)
     {
@@ -56,7 +63,6 @@ public class DealerController : ControllerBase
         if (await _db.Accounts.AnyAsync(a => a.Email == email))
             return BadRequest("Email already exists.");
 
-        // Hvis dto.CustomerId er sat, verificer at customer tilhører denne dealer
         if (dto.CustomerId.HasValue)
         {
             var cust = await _db.Customers.FindAsync(dto.CustomerId.Value);
@@ -69,7 +75,7 @@ public class DealerController : ControllerBase
             Name = dto.Name,
             Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.TempPassword),
-            Role = dto.Role == AccountRole.Admin ? AccountRole.Customer : dto.Role, // dealer bør ikke kunne oprette Admin
+            Role = dto.Role == AccountRole.Admin ? AccountRole.Customer : dto.Role,
             DealerId = dealerId,
             CustomerId = dto.CustomerId,
             PasswordResetRequired = true
@@ -80,7 +86,21 @@ public class DealerController : ControllerBase
         return Ok(new { account.Id, account.Email, account.Role, account.PasswordResetRequired });
     }
 
-    // Dealer kan tilknytte en unit til en account - kun hvis target account tilhører samme dealer (som direkte account.DealerId eller via customer)
+    [HttpGet("accounts")]
+    public async Task<IActionResult> GetAccounts()
+    {
+        var dealerId = GetDealerId();
+        if (dealerId == null) return Forbid();
+
+        var accounts = await _db.Accounts
+            .Where(a => (a.DealerId.HasValue && a.DealerId.Value == dealerId.Value) ||
+                        (a.CustomerId.HasValue && _db.Customers.Any(c => c.Id == a.CustomerId && c.DealerId == dealerId.Value)))
+            .Select(a => new { a.Id, a.Email, a.Name, a.Role, a.DealerId, a.CustomerId })
+            .ToListAsync();
+
+        return Ok(accounts);
+    }
+
     [HttpPost("units/assign")]
     public async Task<IActionResult> AssignUnit([FromBody] AssignUnitDto dto)
     {
@@ -90,7 +110,6 @@ public class DealerController : ControllerBase
         var account = await _db.Accounts.FindAsync(dto.AccountId);
         if (account == null) return BadRequest("Account not found.");
 
-        // Check at account tilhører dealer (enten direkte eller via customer)
         var belongs = (account.DealerId.HasValue && account.DealerId.Value == dealerId.Value);
         if (!belongs && account.CustomerId.HasValue)
         {

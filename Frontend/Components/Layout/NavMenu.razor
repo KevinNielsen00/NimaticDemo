@@ -35,8 +35,26 @@
                 </NavLink>
             </div>
 
+            @if (isAdmin)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/admin">
+                        Admin
+                    </NavLink>
+                </div>
+            }
+
+            @if (isDealer)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/dealer">
+                        Dealer
+                    </NavLink>
+                </div>
+            }
+
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="/Settings">
+                <NavLink class="nav-link" href="/settings">
                     Settings
                 </NavLink>
             </div>
@@ -53,6 +71,8 @@
 @code {
     private bool isLoggedIn;
     private bool loaded;
+    private bool isAdmin;
+    private bool isDealer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -67,6 +87,9 @@
         if (isLoggedIn)
         {
             ApiService.SetToken(token);
+            var role = GetRoleFromToken(token);
+            isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+            isDealer = string.Equals(role, "Dealer", StringComparison.OrdinalIgnoreCase);
         }
 
         StateHasChanged();
@@ -77,5 +100,61 @@
         await AuthService.LogoutAsync();
         isLoggedIn = false;
         Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    // Minimal JWT payload decode (no validation) to extract role claim.
+    private static string? GetRoleFromToken(string jwt)
+    {
+        try
+        {
+            var parts = jwt.Split('.');
+            if (parts.Length < 2) return null;
+            string payload = parts[1];
+            payload = PadBase64(payload.Replace('-', '+').Replace('_', '/'));
+            var bytes = Convert.FromBase64String(payload);
+            var json = System.Text.Encoding.UTF8.GetString(bytes);
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Common names: "role", ClaimTypes.Role URL, or short "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            if (root.TryGetProperty("role", out var prop))
+                return prop.ValueKind == System.Text.Json.JsonValueKind.String ? prop.GetString() : prop.ToString();
+
+            // Try well-known claim URI
+            var roleClaimUris = new[] {
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                "roles",
+                "role"
+            };
+
+            foreach (var uri in roleClaimUris)
+            {
+                if (root.TryGetProperty(uri, out var p))
+                    return p.ValueKind == System.Text.Json.JsonValueKind.String ? p.GetString() : p.ToString();
+            }
+
+            // fallback: scan properties for role-like key
+            foreach (var propKvp in root.EnumerateObject())
+            {
+                if (propKvp.Name.IndexOf("role", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return propKvp.Value.ValueKind == System.Text.Json.JsonValueKind.String ? propKvp.Value.GetString() : propKvp.Value.ToString();
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string PadBase64(string b64)
+    {
+        switch (b64.Length % 4)
+        {
+            case 2: return b64 + "==";
+            case 3: return b64 + "=";
+            default: return b64;
+        }
     }
 }

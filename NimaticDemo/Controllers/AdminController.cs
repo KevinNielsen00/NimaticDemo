@@ -28,6 +28,15 @@ public class AdminController : ControllerBase
         return Ok(dealer);
     }
 
+    [HttpGet("dealers")]
+    public async Task<IActionResult> GetDealers()
+    {
+        var dealers = await _db.Dealers
+            .Select(d => new { d.Id, d.Name })
+            .ToListAsync();
+        return Ok(dealers);
+    }
+
     [HttpPost("customers")]
     public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
     {
@@ -40,10 +49,19 @@ public class AdminController : ControllerBase
         return Ok(customer);
     }
 
+    [HttpGet("customers")]
+    public async Task<IActionResult> GetCustomers([FromQuery] Guid? dealerId = null)
+    {
+        var q = _db.Customers.AsQueryable();
+        if (dealerId.HasValue) q = q.Where(c => c.DealerId == dealerId.Value);
+
+        var customers = await q.Select(c => new { c.Id, c.Name, c.DealerId }).ToListAsync();
+        return Ok(customers);
+    }
+
     [HttpPost("accounts")]
     public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto dto)
     {
-        // optional validation of unique email
         var email = dto.Email.Trim().ToLower();
         if (await _db.Accounts.AnyAsync(a => a.Email == email))
             return BadRequest("Email already exists.");
@@ -56,7 +74,7 @@ public class AdminController : ControllerBase
             Role = dto.Role,
             DealerId = dto.DealerId,
             CustomerId = dto.CustomerId,
-            PasswordResetRequired = true // force change on first login
+            PasswordResetRequired = true
         };
 
         _db.Add(account);
@@ -64,14 +82,36 @@ public class AdminController : ControllerBase
         return Ok(new { account.Id, account.Email, account.Role, account.PasswordResetRequired });
     }
 
+    [HttpGet("accounts")]
+    public async Task<IActionResult> GetAccounts([FromQuery] Guid? dealerId = null, [FromQuery] Guid? customerId = null)
+    {
+        var q = _db.Accounts.AsQueryable();
+
+        if (dealerId.HasValue)
+            q = q.Where(a => a.DealerId == dealerId.Value);
+
+        if (customerId.HasValue)
+            q = q.Where(a => a.CustomerId == customerId.Value);
+
+        var accounts = await q.Select(a => new
+        {
+            a.Id,
+            a.Email,
+            a.Name,
+            a.Role,
+            a.DealerId,
+            a.CustomerId
+        }).ToListAsync();
+
+        return Ok(accounts);
+    }
+
     [HttpPost("units/assign")]
     public async Task<IActionResult> AssignUnit([FromBody] AssignUnitDto dto)
     {
-        // Validate target account exists
         var account = await _db.Accounts.FindAsync(dto.AccountId);
         if (account == null) return BadRequest("Account not found.");
 
-        // Find existing Unit by MacAddress (case-insensitive)
         var mac = dto.MacAddress.Trim();
         var unit = await _db.Units.FirstOrDefaultAsync(u => u.MacAddress.ToLower() == mac.ToLower());
 

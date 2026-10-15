@@ -1,0 +1,122 @@
+﻿Frontend\Pages\Dealer\DealerPanel.razor
+@page "/dealer"
+@inject Frontend.Services.ApiService Api
+
+<h3>Dealer panel</h3>
+
+<section>
+    <h4>Create Customer</h4>
+    <input @bind="customerName" placeholder="Customer name" />
+    <button @onclick="CreateCustomer">Create Customer</button>
+    <div>@msg</div>
+</section>
+
+<section>
+    <h4>Create Customer Account</h4>
+    <select @bind="selectedCustomerIdForAccount">
+        <option value="">-- choose customer --</option>
+        @foreach (var c in customers)
+        {
+            <option value="@c.Id">@c.Name</option>
+        }
+    </select>
+
+    <input @bind="accName" placeholder="Name" />
+    <input @bind="accEmail" placeholder="Email" />
+    <input @bind="accTempPassword" placeholder="Temp password" />
+    <input @bind="accRole" placeholder="Role (Customer)" />
+    <button @onclick="CreateAccount">Create Account</button>
+    <div>@accMsg</div>
+</section>
+
+<section>
+    <h4>Assign Unit to Account</h4>
+    <select @bind="assignAccountId">
+        <option value="">-- choose account --</option>
+        @foreach (var a in accounts)
+        {
+            <option value="@a.Id">@a.Email (@a.Name)</option>
+        }
+    </select>
+    <input @bind="assignMac" placeholder="MAC address" />
+    <input @bind="assignUnitName" placeholder="Unit name" />
+    <input @bind="assignLocation" placeholder="Location" />
+    <button @onclick="AssignUnit">Assign Unit</button>
+    <div>@assignMsg</div>
+</section>
+
+@code {
+    List<Frontend.Models.CustomerDto> customers = new();
+    List<Frontend.Models.AccountDto> accounts = new();
+
+    string customerName = "";
+    string msg = "";
+
+    string accName = "";
+    string accEmail = "";
+    string accTempPassword = "";
+    string accRole = "Customer";
+    Guid? selectedCustomerIdForAccount;
+    string accMsg = "";
+
+    Guid? assignAccountId = null;
+    string assignMac = "";
+    string assignUnitName = "";
+    string assignLocation = "";
+    string assignMsg = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await Api.GetCustomersAsync(asDealer: true);
+        accounts = await Api.GetAccountsAsync(asDealer: true);
+    }
+
+    async Task CreateCustomer()
+    {
+        try
+        {
+            var dto = new Frontend.Models.CreateCustomerDto { Name = customerName };
+            var res = await Api.CreateCustomerAsync(dto, asDealer: true);
+            msg = $"Customer created: {res?.Id}";
+            customers = await Api.GetCustomersAsync(asDealer: true);
+        }
+        catch (Exception ex) { msg = ex.Message; }
+    }
+
+    async Task CreateAccount()
+    {
+        try
+        {
+            var dto = new Frontend.Models.CreateAccountDto
+            {
+                Name = accName,
+                Email = accEmail,
+                TempPassword = accTempPassword,
+                Role = accRole,
+                CustomerId = selectedCustomerIdForAccount
+            };
+            var res = await Api.CreateAccountAsync(dto, asDealer: true);
+            accMsg = $"Account created: {res?.Id}";
+            accounts = await Api.GetAccountsAsync(asDealer: true);
+        }
+        catch (Exception ex) { accMsg = ex.Message; }
+    }
+
+    async Task AssignUnit()
+    {
+        try
+        {
+            if (assignAccountId == null) { assignMsg = "Choose account."; return; }
+            var dto = new Frontend.Models.AssignUnitDto
+            {
+                MacAddress = assignMac,
+                AccountId = assignAccountId.Value,
+                UnitName = assignUnitName,
+                Location = assignLocation
+            };
+            var res = await Api.AssignUnitAsync(dto, asDealer: true);
+            assignMsg = $"Unit assigned: {res?.MacAddress}";
+        }
+        catch (Exception ex) { assignMsg = ex.Message; }
+    }
+}
