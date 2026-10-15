@@ -25,7 +25,8 @@ public class AdminController : ControllerBase
         var dealer = new Dealer { Name = dto.Name };
         _db.Add(dealer);
         await _db.SaveChangesAsync();
-        return Ok(dealer);
+
+        return Ok(new { dealer.Id, dealer.Name });
     }
 
     [HttpGet("dealers")]
@@ -46,7 +47,8 @@ public class AdminController : ControllerBase
         var customer = new Customer { Name = dto.Name, DealerId = dealer.Id };
         _db.Add(customer);
         await _db.SaveChangesAsync();
-        return Ok(customer);
+
+        return Ok(new { customer.Id, customer.Name, customer.DealerId });
     }
 
     [HttpGet("customers")]
