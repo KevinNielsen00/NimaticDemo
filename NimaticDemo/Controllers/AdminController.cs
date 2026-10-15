@@ -22,11 +22,19 @@ public class AdminController : ControllerBase
     [HttpPost("dealers")]
     public async Task<IActionResult> CreateDealer([FromBody] CreateDealerDto dto)
     {
-        var dealer = new Dealer { Name = dto.Name };
-        _db.Add(dealer);
-        await _db.SaveChangesAsync();
+        try
+        {
+            var dealer = new Dealer { Name = dto.Name };
+            _db.Add(dealer);
+            await _db.SaveChangesAsync();
 
-        return Ok(new { dealer.Id, dealer.Name });
+            return Ok(new { Id = dealer.Id, Name = dealer.Name });
+        }
+        catch (Exception ex)
+        {
+
+            return Problem(title: "Could not create dealer", detail: ex.Message);
+        }
     }
 
     [HttpGet("dealers")]
@@ -41,14 +49,21 @@ public class AdminController : ControllerBase
     [HttpPost("customers")]
     public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerDto dto)
     {
-        var dealer = await _db.Dealers.FindAsync(dto.DealerId);
-        if (dealer == null) return BadRequest("Dealer not found.");
+        try
+        {
+            var dealer = await _db.Dealers.FindAsync(dto.DealerId);
+            if (dealer == null) return BadRequest("Dealer not found.");
 
-        var customer = new Customer { Name = dto.Name, DealerId = dealer.Id };
-        _db.Add(customer);
-        await _db.SaveChangesAsync();
+            var customer = new Customer { Name = dto.Name, DealerId = dealer.Id };
+            _db.Add(customer);
+            await _db.SaveChangesAsync();
 
-        return Ok(new { customer.Id, customer.Name, customer.DealerId });
+            return Ok(new { Id = customer.Id, Name = customer.Name, DealerId = customer.DealerId });
+        }
+        catch (Exception ex)
+        {
+            return Problem(title: "Could not create customer", detail: ex.Message);
+        }
     }
 
     [HttpGet("customers")]
@@ -64,24 +79,32 @@ public class AdminController : ControllerBase
     [HttpPost("accounts")]
     public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto dto)
     {
-        var email = dto.Email.Trim().ToLower();
-        if (await _db.Accounts.AnyAsync(a => a.Email == email))
-            return BadRequest("Email already exists.");
-
-        var account = new Account
+        try
         {
-            Name = dto.Name,
-            Email = email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.TempPassword),
-            Role = dto.Role,
-            DealerId = dto.DealerId,
-            CustomerId = dto.CustomerId,
-            PasswordResetRequired = true
-        };
+            var email = dto.Email.Trim().ToLower();
+            if (await _db.Accounts.AnyAsync(a => a.Email == email))
+                return BadRequest("Email already exists.");
 
-        _db.Add(account);
-        await _db.SaveChangesAsync();
-        return Ok(new { account.Id, account.Email, account.Role, account.PasswordResetRequired });
+            var account = new Account
+            {
+                Name = dto.Name,
+                Email = email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.TempPassword),
+                Role = dto.Role,
+                DealerId = dto.DealerId,
+                CustomerId = dto.CustomerId,
+                PasswordResetRequired = true
+            };
+
+            _db.Add(account);
+            await _db.SaveChangesAsync();
+
+            return Ok(new { Id = account.Id, Email = account.Email, Role = account.Role.ToString(), PasswordResetRequired = account.PasswordResetRequired });
+        }
+        catch (Exception ex)
+        {
+            return Problem(title: "Could not create account", detail: ex.Message);
+        }
     }
 
     [HttpGet("accounts")]
