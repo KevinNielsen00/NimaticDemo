@@ -1,75 +1,92 @@
 ﻿@page "/admin"
+@using Frontend.Models
 @inject Frontend.Services.ApiService Api
+@inject Frontend.Services.AuthService AuthService
+@inject NavigationManager Nav
 
 <h3>Admin panel</h3>
 
-<section>
-    <h4>Create Dealer</h4>
-    <input @bind="dealerName" placeholder="Dealer name" />
-    <button @onclick="CreateDealer">Create Dealer</button>
-    <div>@dealerMsg</div>
-</section>
+@if (loading)
+{
+    <p>Loading...</p>
+}
+else if (!isAuthorized)
+{
+    <p>Not authorized. Redirecting to login...</p>
+}
+else
+{
+    <section>
+        <h4>Create Dealer</h4>
+        <input @bind="dealerName" placeholder="Dealer name" />
+        <button @onclick="CreateDealer">Create Dealer</button>
+        <div>@dealerMsg</div>
+    </section>
 
-<section>
-    <h4>Create Customer (under dealer)</h4>
-    <select @bind="SelectedDealerId">
-        <option value="">-- choose dealer --</option>
-        @foreach (var d in dealers)
-        {
-            <option value="@d.Id">@d.Name</option>
-        }
-    </select>
-    <input @bind="customerName" placeholder="Customer name" />
-    <button @onclick="CreateCustomer">Create Customer</button>
-    <div>@customerMsg</div>
-</section>
+    <section>
+        <h4>Create Customer (under dealer)</h4>
+        <select @bind="SelectedDealerId">
+            <option value="">-- choose dealer --</option>
+            @foreach (var d in dealers)
+            {
+                <option value="@d.Id">@d.Name</option>
+            }
+        </select>
+        <input @bind="customerName" placeholder="Customer name" />
+        <button @onclick="CreateCustomer">Create Customer</button>
+        <div>@customerMsg</div>
+    </section>
 
-<section>
-    <h4>Create Account (Admin)</h4>
-    <select @bind="SelectedDealerIdForAccount">
-        <option value="">-- optional dealer --</option>
-        @foreach (var d in dealers)
-        {
-            <option value="@d.Id">@d.Name</option>
-        }
-    </select>
+    <section>
+        <h4>Create Account (Admin)</h4>
+        <select @bind="SelectedDealerIdForAccount">
+            <option value="">-- optional dealer --</option>
+            @foreach (var d in dealers)
+            {
+                <option value="@d.Id">@d.Name</option>
+            }
+        </select>
 
-    <select @bind="selectedCustomerIdForAccount">
-        <option value="">-- optional customer --</option>
-        @foreach (var c in customersForSelectedDealer)
-        {
-            <option value="@c.Id">@c.Name</option>
-        }
-    </select>
+        <select @bind="selectedCustomerIdForAccount">
+            <option value="">-- optional customer --</option>
+            @foreach (var c in customersForSelectedDealer)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
 
-    <input @bind="accName" placeholder="Name" />
-    <input @bind="accEmail" placeholder="Email" />
-    <input @bind="accTempPassword" placeholder="Temp password" />
-    <input @bind="accRole" placeholder="Role (Admin/Dealer/Customer)" />
-    <button @onclick="CreateAccount">Create Account</button>
-    <div>@accountMsg</div>
-</section>
+        <input @bind="accName" placeholder="Name" />
+        <input @bind="accEmail" placeholder="Email" />
+        <input @bind="accTempPassword" placeholder="Temp password" />
+        <input @bind="accRole" placeholder="Role (Admin/Dealer/Customer)" />
+        <button @onclick="CreateAccount">Create Account</button>
+        <div>@accountMsg</div>
+    </section>
 
-<section>
-    <h4>Assign Unit to Account</h4>
-    <select @bind="assignAccountId">
-        <option value="">-- choose account --</option>
-        @foreach (var a in accounts)
-        {
-            <option value="@a.Id">@a.Email (@a.Name)</option>
-        }
-    </select>
-    <input @bind="assignMac" placeholder="MAC address" />
-    <input @bind="assignUnitName" placeholder="Unit name" />
-    <input @bind="assignLocation" placeholder="Location" />
-    <button @onclick="AssignUnit">Assign Unit</button>
-    <div>@assignMsg</div>
-</section>
+    <section>
+        <h4>Assign Unit to Account</h4>
+        <select @bind="assignAccountId">
+            <option value="">-- choose account --</option>
+            @foreach (var a in accounts)
+            {
+                <option value="@a.Id">@a.Email (@a.Name)</option>
+            }
+        </select>
+        <input @bind="assignMac" placeholder="MAC address" />
+        <input @bind="assignUnitName" placeholder="Unit name" />
+        <input @bind="assignLocation" placeholder="Location" />
+        <button @onclick="AssignUnit">Assign Unit</button>
+        <div>@assignMsg</div>
+    </section>
+}
 
 @code {
-    List<Frontend.Models.DealerDto> dealers = new();
-    List<Frontend.Models.CustomerDto> customersForSelectedDealer = new();
-    List<Frontend.Models.AccountDto> accounts = new();
+    bool loading = true;
+    bool isAuthorized = true;
+
+    List<DealerDto> dealers = new();
+    List<CustomerDto> customersForSelectedDealer = new();
+    List<AccountDto> accounts = new();
 
     string dealerName = "";
     string dealerMsg = "";
@@ -92,6 +109,7 @@
     string assignLocation = "";
     string assignMsg = "";
 
+    // bound properties with side-effects
     Guid? SelectedDealerId
     {
         get => selectedDealerId;
@@ -100,7 +118,7 @@
             if (selectedDealerId != value)
             {
                 selectedDealerId = value;
-                _ = OnSelectedDealerChangedAsync(value);
+                _ = LoadCustomersForDealerAsync(selectedDealerId);
             }
         }
     }
@@ -113,40 +131,81 @@
             if (selectedDealerIdForAccount != value)
             {
                 selectedDealerIdForAccount = value;
-                _ = OnSelectedDealerForAccountChangedAsync(value);
+                _ = LoadCustomersForDealerAsync(selectedDealerIdForAccount);
             }
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        dealers = await Api.GetDealersAsync();
-        accounts = await Api.GetAccountsAsync();
+        if (!firstRender) return;
+
+        loading = true;
+        StateHasChanged();
+
+        var token = await AuthService.GetTokenAsync();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            isAuthorized = false;
+            loading = false;
+            StateHasChanged();
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        Api.SetToken(token);
+
+        try
+        {
+            dealers = await Api.GetDealersAsync();
+            accounts = await Api.GetAccountsAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.Message.Contains("401"))
+            {
+                isAuthorized = false;
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo("/login");
+            }
+            else
+            {
+                dealerMsg = ex.Message;
+            }
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
 
-    async Task OnSelectedDealerChangedAsync(Guid? dealerId)
+    async Task LoadCustomersForDealerAsync(Guid? dealerId)
     {
-        if (dealerId.HasValue)
-            customersForSelectedDealer = await Api.GetCustomersAsync(dealerId);
-        else
+        if (!dealerId.HasValue)
+        {
             customersForSelectedDealer = new();
-        StateHasChanged();
-    }
+            StateHasChanged();
+            return;
+        }
 
-    async Task OnSelectedDealerForAccountChangedAsync(Guid? dealerId)
-    {
-        if (dealerId.HasValue)
+        try
+        {
             customersForSelectedDealer = await Api.GetCustomersAsync(dealerId);
-        else
-            customersForSelectedDealer = new();
-        StateHasChanged();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            customerMsg = ex.Message;
+            StateHasChanged();
+        }
     }
 
     async Task CreateDealer()
     {
         try
         {
-            var dto = new Frontend.Models.CreateDealerDto { Name = dealerName };
+            var dto = new CreateDealerDto { Name = dealerName };
             var res = await Api.CreateDealerAsync(dto);
             dealerMsg = $"Dealer created: {res?.Id}";
             dealers = await Api.GetDealersAsync();
@@ -159,7 +218,7 @@
         try
         {
             if (SelectedDealerId == null) { customerMsg = "Select dealer first."; return; }
-            var dto = new Frontend.Models.CreateCustomerDto { Name = customerName, DealerId = SelectedDealerId };
+            var dto = new CreateCustomerDto { Name = customerName, DealerId = SelectedDealerId };
             var res = await Api.CreateCustomerAsync(dto);
             customerMsg = $"Customer created: {res?.Id}";
             customersForSelectedDealer = await Api.GetCustomersAsync(SelectedDealerId);
@@ -171,7 +230,7 @@
     {
         try
         {
-            var dto = new Frontend.Models.CreateAccountDto
+            var dto = new CreateAccountDto
             {
                 Name = accName,
                 Email = accEmail,
@@ -192,7 +251,7 @@
         try
         {
             if (assignAccountId == null) { assignMsg = "Choose account."; return; }
-            var dto = new Frontend.Models.AssignUnitDto
+            var dto = new AssignUnitDto
             {
                 MacAddress = assignMac,
                 AccountId = assignAccountId.Value,
@@ -201,6 +260,7 @@
             };
             var res = await Api.AssignUnitAsync(dto);
             assignMsg = $"Unit assigned: {res?.MacAddress}";
+            // refresh units/accounts if needed
         }
         catch (Exception ex) { assignMsg = ex.Message; }
     }
