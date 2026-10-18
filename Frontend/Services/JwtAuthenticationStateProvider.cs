@@ -19,15 +19,35 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
 	public override async Task<AuthenticationState> GetAuthenticationStateAsync()
 	{
-		var token = await _localStorage.GetItemAsync<string>(TOKEN_KEY);
+		string? token = null;
+		try
+		{
+			// localStorage kan fejle i server/kørselstidspunkter uden JS interop - beskyt med try/catch
+			token = await _localStorage.GetItemAsync<string>(TOKEN_KEY);
+		}
+		catch
+		{
+			// Hvis vi ikke kan nå localStorage, treat as anonymous (do NOT rethrow)
+			return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+		}
+
 		if (string.IsNullOrWhiteSpace(token))
 			return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
-		_apiService.SetToken(token);
-		var claims = ParseClaimsFromJwt(token);
-		var identity = new ClaimsIdentity(claims, "jwt");
-		var user = new ClaimsPrincipal(identity);
-		return new AuthenticationState(user);
+		try
+		{
+			_apiService.SetToken(token);
+			var claims = ParseClaimsFromJwt(token);
+			var identity = new ClaimsIdentity(claims, "jwt");
+			var user = new ClaimsPrincipal(identity);
+			return new AuthenticationState(user);
+		}
+		catch
+		{
+			// Hvis token er invalid eller parsing fejler, return anonym
+			_apiService.SetToken(null);
+			return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+		}
 	}
 
 	public void NotifyUserAuthentication(string token)
@@ -38,11 +58,19 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 			return;
 		}
 
-		_apiService.SetToken(token);
-		var claims = ParseClaimsFromJwt(token);
-		var identity = new ClaimsIdentity(claims, "jwt");
-		var user = new ClaimsPrincipal(identity);
-		NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+		try
+		{
+			_apiService.SetToken(token);
+			var claims = ParseClaimsFromJwt(token);
+			var identity = new ClaimsIdentity(claims, "jwt");
+			var user = new ClaimsPrincipal(identity);
+			NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+		}
+		catch
+		{
+			// ignore parsing errors here
+			NotifyUserLogout();
+		}
 	}
 
 	public void NotifyUserLogout()
@@ -59,7 +87,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 		var token = handler.ReadJwtToken(jwt);
 		var claims = token.Claims.ToList();
 
-		// Ensure role claims are available as ClaimTypes.Role
 		var roleClaimTypes = new[] { "role", "roles", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" };
 		var roles = token.Claims.Where(c => roleClaimTypes.Contains(c.Type, StringComparer.OrdinalIgnoreCase)).ToList();
 		foreach (var r in roles)
