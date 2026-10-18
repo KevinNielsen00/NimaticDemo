@@ -166,7 +166,7 @@ namespace Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AccountId")
+                    b.Property<Guid?>("AccountId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -278,14 +278,15 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.Account", "Account")
                         .WithMany("Units")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Backend.Models.Customer", null)
+                    b.HasOne("Backend.Models.Customer", "Customer")
                         .WithMany("Units")
                         .HasForeignKey("CustomerId");
 
                     b.Navigation("Account");
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("Backend.Models.UserSettings", b =>
