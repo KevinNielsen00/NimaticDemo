@@ -1,23 +1,19 @@
-﻿@using Microsoft.AspNetCore.Authorization
+﻿@using Microsoft.AspNetCore.SignalR.Client
 @page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
-@using Frontend.Models
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@inject Frontend.Services.ApiService ApiService
-@inject Frontend.Services.AuthService AuthService
-@inject NavigationManager Navigation
 @implements IAsyncDisposable
-@using Microsoft.AspNetCore.SignalR.Client
+@inject Frontend.Services.AuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject Frontend.Services.ApiService ApiService
 
 <h3>Dashboard</h3>
 
 @if (isLoading)
 {
     <p>Loading units...</p>
-}
-else if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="alert alert-danger">@errorMessage</div>
 }
 else if (units.Count == 0)
 {
@@ -70,59 +66,43 @@ else
 @code {
     private List<UnitDto> units = new();
     private Dictionary<Guid, MeasurementDto?> latestMeasurements = new();
-
-    private bool isLoading = true;
-    private string? errorMessage;
-    private bool loaded;
     private HubConnection? hubConnection;
+
+    bool isLoading = true;
+    bool hasToken = false;
+    bool isAuthenticated = false;
+    string userName = "";
+    List<string> roles = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || loaded)
-            return;
+        if (!firstRender) return;
 
-        loaded = true;
+        // hent token (viser om localStorage-access virker)
+        var token = await AuthService.GetTokenAsync();
+        hasToken = !string.IsNullOrWhiteSpace(token);
 
-        try
+        // authentication state
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        isAuthenticated = user?.Identity?.IsAuthenticated == true;
+        userName = user?.Identity?.Name ?? "(none)";
+        roles = user?.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value).ToList()
+                ?? new List<string>();
+
+        // DON'T auto-redirect while debugging — comment out navigation to diagnose loop
+        // if (!isAuthenticated) Navigation.NavigateTo("/login");
+        // if (!roles.Contains("Admin")) Navigation.NavigateTo("/dashboard");
+
+        // normal loading code (call ApiService only if authenticated)
+        if (isAuthenticated)
         {
-            var token = await AuthService.GetTokenAsync();
-
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                Navigation.NavigateTo("/login", forceLoad: true);
-                return;
-            }
-
             ApiService.SetToken(token);
-
             await LoadDashboardData();
-
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl("http://91.98.30.56:5000/measurementHub")
-                .WithAutomaticReconnect()
-                .Build();
-
-            hubConnection.On<Guid>("MeasurementUpdated", unitId =>
-            {
-
-                return InvokeAsync(async () =>
-                {
-                    await LoadLatestMeasurementForUnit(unitId);
-                    StateHasChanged();
-                });
-            });
-
-            await hubConnection.StartAsync();
         }
-        catch (Exception ex)
-        {
-            errorMessage = ex.Message;
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
+
+        isLoading = false;
+        StateHasChanged();
     }
 
     private async Task LoadDashboardData()
