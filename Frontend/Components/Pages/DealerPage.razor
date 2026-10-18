@@ -21,35 +21,6 @@ else if (!isAuthorized)
 }
 else
 {
-    <div class="row g-3">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Create Customer</div>
-                <div class="card-body">
-                    <EditForm Model="createCustomerModel" OnValidSubmit="HandleCreateCustomer">
-                        <div class="mb-2">
-                            <InputText class="form-control" @bind-Value="createCustomerModel.Name" placeholder="Customer name" />
-                        </div>
-                        <button class="btn btn-primary" disabled="@isProcessingCustomer">
-                            @if (isProcessingCustomer)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                <span>Creating...</span>
-                            }
-                            else
-                            {
-                                <span>Create Customer</span>
-                            }
-                        </button>
-                        @if (!string.IsNullOrWhiteSpace(customerMsg))
-                        {
-                            <div class="mt-2 text-muted">@customerMsg</div>
-                        }
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">Create Customer Account</div>
