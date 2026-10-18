@@ -1,8 +1,5 @@
-﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
-@page "/admin"
+﻿@page "/admin"
 @using Frontend.Models
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Admin")]
 @inject Frontend.Services.ApiService Api
 @inject Frontend.Services.AuthService AuthService
 @inject NavigationManager Nav
@@ -16,7 +13,7 @@
 }
 else if (!isAuthorized)
 {
-    <p>Not authorized. Redirecting to login...</p>
+    <p>Not authorized. Redirecting...</p>
 }
 else
 {
@@ -147,16 +144,21 @@ else
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user?.Identity?.IsAuthenticated != true || !user.IsInRole("Admin"))
+        // Not authenticated -> go to login
+        if (user?.Identity?.IsAuthenticated != true)
         {
-            isAuthorized = false;
-            loading = false;
-            StateHasChanged();
-            await AuthService.LogoutAsync();
             Nav.NavigateTo("/login");
             return;
         }
 
+        // Authenticated but not Admin -> redirect to dashboard (eller vis "Not authorized")
+        if (!user.IsInRole("Admin"))
+        {
+            Nav.NavigateTo("/dashboard");
+            return;
+        }
+
+        // Authorized Admin: set token and load data
         var token = await AuthService.GetTokenAsync();
         Api.SetToken(token);
 
@@ -165,15 +167,8 @@ else
             dealers = await Api.GetDealersAsync();
             accounts = await Api.GetAccountsAsync();
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            if (ex.Message.Contains("401"))
-            {
-                isAuthorized = false;
-                await AuthService.LogoutAsync();
-                Nav.NavigateTo("/login");
-                return;
-            }
             dealerMsg = ex.Message;
         }
         finally
