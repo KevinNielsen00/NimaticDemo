@@ -84,6 +84,7 @@ else
 @code {
     bool loading = true;
     bool isAuthorized = true;
+    bool checkedLoginState;
 
     List<DealerDto> dealers = new();
     List<CustomerDto> customersForSelectedDealer = new();
@@ -137,28 +138,38 @@ else
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
+        // start as loading — real check happens on client render
         loading = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || checkedLoginState)
+            return;
+
+        checkedLoginState = true;
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        // Not authenticated -> go to login
         if (user?.Identity?.IsAuthenticated != true)
         {
+            // not logged in -> go to login
             Nav.NavigateTo("/login");
             return;
         }
 
-        // Authenticated but not Admin -> redirect to dashboard (eller vis "Not authorized")
         if (!user.IsInRole("Admin"))
         {
+            // logged in but not admin -> go to dashboard (or show not authorized)
             Nav.NavigateTo("/dashboard");
             return;
         }
 
-        // Authorized Admin: set token and load data
+        // authorized admin -> load data
+        isAuthorized = true;
         var token = await AuthService.GetTokenAsync();
         Api.SetToken(token);
 
@@ -169,50 +180,6 @@ else
         }
         catch (Exception ex)
         {
-            dealerMsg = ex.Message;
-        }
-        finally
-        {
-            loading = false;
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-            return;
-
-        loading = true;
-        StateHasChanged();
-
-        var token = await AuthService.GetTokenAsync();
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            isAuthorized = false;
-            loading = false;
-            StateHasChanged();
-            Nav.NavigateTo("/login");
-            return;
-        }
-
-        Api.SetToken(token);
-
-        try
-        {
-            dealers = await Api.GetDealersAsync();
-            accounts = await Api.GetAccountsAsync();
-        }
-        catch (HttpRequestException ex)
-        {
-            // Handle 401 explicitly
-            if (ex.Message.Contains("401"))
-            {
-                isAuthorized = false;
-                await AuthService.LogoutAsync();
-                Nav.NavigateTo("/login");
-                return;
-            }
-
             dealerMsg = ex.Message;
         }
         finally
