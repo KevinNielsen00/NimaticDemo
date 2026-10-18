@@ -260,8 +260,8 @@ else
     IEnumerable<AccountDto> FilteredAccounts =>
         assignAccountFilter switch
         {
-            "Dealers" => accounts.Where(a => string.Equals(a.Role, AccountRole.Dealer.ToString(), StringComparison.OrdinalIgnoreCase)),
-            "Customers" => accounts.Where(a => string.Equals(a.Role, AccountRole.Customer.ToString(), StringComparison.OrdinalIgnoreCase)),
+            "Dealers" => accounts.Where(a => a.Role == AccountRole.Dealer),
+            "Customers" => accounts.Where(a => a.Role == AccountRole.Customer),
             _ => accounts
         };
 
