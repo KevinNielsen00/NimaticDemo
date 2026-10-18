@@ -1,4 +1,5 @@
 ﻿@page "/admin"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using Frontend.Models
 @inject Frontend.Services.ApiService Api
 @inject Frontend.Services.AuthService AuthService
@@ -146,30 +147,33 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || checkedLoginState)
+        // disable prerender + run kun én gang on client
+        if (checkedLoginState)
             return;
 
         checkedLoginState = true;
+
+        // show loading while we verify token & load data
+        loading = true;
+        StateHasChanged();
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
         if (user?.Identity?.IsAuthenticated != true)
         {
-            // not logged in -> go to login
             Nav.NavigateTo("/login");
             return;
         }
 
         if (!user.IsInRole("Admin"))
         {
-            // logged in but not admin -> go to dashboard (or show not authorized)
             Nav.NavigateTo("/dashboard");
             return;
         }
 
-        // authorized admin -> load data
         isAuthorized = true;
+
         var token = await AuthService.GetTokenAsync();
         Api.SetToken(token);
 
