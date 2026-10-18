@@ -104,23 +104,24 @@ public class DealerController : ControllerBase
     [HttpPost("units/assign")]
     public async Task<IActionResult> AssignUnit([FromBody] AssignUnitDto dto)
     {
+        if (dto == null || string.IsNullOrWhiteSpace(dto.MacAddress))
+            return BadRequest("MacAddress is required.");
+
         var dealerId = GetDealerId();
         if (dealerId == null) return Forbid();
 
         var account = await _db.Accounts.FindAsync(dto.AccountId);
         if (account == null) return BadRequest("Account not found.");
 
-        var belongs = (account.DealerId.HasValue && account.DealerId.Value == dealerId.Value);
-        if (!belongs && account.CustomerId.HasValue)
+        // Ensure the account belongs to this dealer (either account is dealer or its customer belongs to dealer)
+        if (account.DealerId.HasValue && account.DealerId != dealerId &&
+            !(account.CustomerId.HasValue && _db.Customers.Any(c => c.Id == account.CustomerId && c.DealerId == dealerId)))
         {
-            var customer = await _db.Customers.FindAsync(account.CustomerId.Value);
-            belongs = customer != null && customer.DealerId == dealerId.Value;
+            return Forbid();
         }
 
-        if (!belongs) return Forbid();
-
-        var mac = dto.MacAddress.Trim();
-        var unit = await _db.Units.FirstOrDefaultAsync(u => u.MacAddress.ToLower() == mac.ToLower());
+        var mac = dto.MacAddress.Trim().ToUpperInvariant();
+        var unit = await _db.Units.FirstOrDefaultAsync(u => u.MacAddress.ToUpper() == mac);
 
         if (unit == null)
         {
@@ -128,20 +129,35 @@ public class DealerController : ControllerBase
             {
                 MacAddress = mac,
                 AccountId = account.Id,
-                UnitName = dto.UnitName,
-                Location = dto.Location
+                UnitName = string.IsNullOrWhiteSpace(dto.UnitName) ? null : dto.UnitName.Trim(),
+                Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim(),
+                CustomerId = account.CustomerId,
+                CreatedAt = DateTime.UtcNow
             };
             _db.Units.Add(unit);
         }
         else
         {
             unit.AccountId = account.Id;
-            if (!string.IsNullOrWhiteSpace(dto.UnitName)) unit.UnitName = dto.UnitName;
-            if (!string.IsNullOrWhiteSpace(dto.Location)) unit.Location = dto.Location;
+            unit.CustomerId = account.CustomerId;
+            if (!string.IsNullOrWhiteSpace(dto.UnitName)) unit.UnitName = dto.UnitName.Trim();
+            if (!string.IsNullOrWhiteSpace(dto.Location)) unit.Location = dto.Location.Trim();
             _db.Units.Update(unit);
         }
 
         await _db.SaveChangesAsync();
-        return Ok(unit);
+
+        var result = new Backend.DTOs.Units.UnitDto
+        {
+            Id = unit.Id,
+            MacAddress = unit.MacAddress,
+            UnitName = unit.UnitName,
+            Location = unit.Location,
+            AccountId = unit.AccountId,
+            CustomerId = unit.CustomerId,
+            CreatedAt = unit.CreatedAt
+        };
+
+        return Ok(result);
     }
 }
