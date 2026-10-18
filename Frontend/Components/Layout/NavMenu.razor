@@ -68,22 +68,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-            return;
-
-        if (initialized) return;
-        initialized = true;
+        if (firstRender) return; // run client-only on second render
 
         var token = await AuthService.GetTokenAsync();
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            ApiService.SetToken(token.Trim('"'));
-        }
+        if (!string.IsNullOrWhiteSpace(token)) ApiService.SetToken(token.Trim('"'));
 
-        if (AuthStateProvider is JwtAuthStateProvider jwtProvider)
-        {
-            await jwtProvider.NotifyAuthenticationStateFromLocalStorageAsync();
-        }
+        if (AuthStateProvider is Frontend.Services.JwtAuthStateProvider jwt)
+            await jwt.NotifyAuthenticationStateFromLocalStorageAsync();
 
         StateHasChanged();
     }
