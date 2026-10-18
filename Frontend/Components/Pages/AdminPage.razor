@@ -21,49 +21,6 @@ else if (!isAuthorized)
 }
 else
 {
-    <div class="row g-3">
-        <!-- Create Customer -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Create Customer</div>
-                <div class="card-body">
-                    <EditForm Model="createCustomerModel" OnValidSubmit="HandleCreateCustomer">
-                        <div class="mb-2">
-                            <label class="form-label">Dealer</label>
-                            <select class="form-select" @bind="SelectedDealerId">
-                                <option value="">-- choose dealer --</option>
-                                @foreach (var d in dealers)
-                                {
-                                    <option value="@d.Id">@d.Name</option>
-                                }
-                            </select>
-                        </div>
-
-                        <div class="mb-2">
-                            <InputText class="form-control" @bind-Value="createCustomerModel.Name" placeholder="Customer name" />
-                        </div>
-
-                        <button class="btn btn-primary" disabled="@isProcessingCustomer">
-                            @if (isProcessingCustomer)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                <span>Creating...</span>
-                            }
-                            else
-                            {
-                                <span>Create Customer</span>
-                            }
-                        </button>
-
-                        @if (!string.IsNullOrWhiteSpace(customerMsg))
-                        {
-                            <div class="mt-2 text-muted">@customerMsg</div>
-                        }
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-
         <!-- Create Account (Admin can create Admin/Dealer/Customer) -->
         <div class="col-md-6">
             <div class="card">
@@ -198,7 +155,6 @@ else
                 </div>
             </div>
         </div>
-    </div>
 }
 
 @code {
@@ -406,18 +362,55 @@ else
     {
         isProcessingAssign = true;
         assignMsg = "";
+
         try
         {
-            if (assignAccountId == null) { assignMsg = "Choose account."; return; }
+            if (assignAccountId == null)
+            {
+                assignMsg = "Choose account.";
+                return;
+            }
+
+            var mac = (assignMac ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(mac))
+            {
+                assignMsg = "Provide MAC address.";
+                return;
+            }
+
+            // Simple normalization: remove non-hex characters (optional)
+            var normalized = new string(mac.Where(char.IsLetterOrDigit).ToArray());
+            if (normalized.Length < 8)
+            {
+                assignMsg = "MAC looks invalid.";
+                return;
+            }
+
             var dto = new AssignUnitDto
             {
-                MacAddress = assignMac,
+                MacAddress = mac, // backend uses case-insensitive compare
                 AccountId = assignAccountId.Value,
-                UnitName = assignUnitName,
-                Location = assignLocation
+                UnitName = assignUnitName?.Trim() ?? "",
+                Location = assignLocation?.Trim() ?? ""
             };
+
+            // Admin page -> call admin endpoint (ApiService handles URL)
             var res = await Api.AssignUnitAsync(dto);
-            assignMsg = $"Unit assigned: {res?.MacAddress}";
+
+            if (res != null)
+            {
+                assignMsg = $"Unit assigned: {res.MacAddress}";
+                // Optionally refresh accounts/units
+                accounts = await Api.GetAccountsAsync();
+            }
+            else
+            {
+                assignMsg = "No response from server.";
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            assignMsg = ex.Message;
         }
         catch (Exception ex)
         {
@@ -426,6 +419,7 @@ else
         finally
         {
             isProcessingAssign = false;
+            StateHasChanged();
         }
     }
 }

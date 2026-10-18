@@ -1,9 +1,11 @@
-﻿namespace Frontend.Models;
-
-public class UnitDto
+﻿namespace Frontend.Models
 {
-    public Guid Id { get; set; }
-    public string MacAddress { get; set; } = "";
-    public string? UnitName { get; set; }
-    public string? Location { get; set; }
+    public class UnitDto
+    {
+        public Guid Id { get; set; }
+        public string MacAddress { get; set; } = "";
+        public string UnitName { get; set; } = "";
+        public string Location { get; set; } = "";
+        public Guid? AccountId { get; set; }
+    }
 }
