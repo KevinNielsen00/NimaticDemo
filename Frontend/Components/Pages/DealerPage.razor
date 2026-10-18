@@ -1,6 +1,8 @@
 ﻿Frontend\Pages\Dealer\DealerPanel.razor
 @page "/dealer"
 @inject Frontend.Services.ApiService Api
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Dealer,Admin")]
 
 <h3>Dealer panel</h3>
 

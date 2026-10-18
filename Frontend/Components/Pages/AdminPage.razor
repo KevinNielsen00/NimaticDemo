@@ -2,7 +2,12 @@
 @using Frontend.Models
 @inject Frontend.Services.ApiService Api
 @inject Frontend.Services.AuthService AuthService
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+
 
 <h3>Admin panel</h3>
 
@@ -138,40 +143,107 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Skip server-side prerender; run client-only logic on subsequent render
         if (firstRender)
             return;
 
         loading = true;
         StateHasChanged();
 
-        var token = await AuthService.GetTokenAsync();
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            isAuthorized = false;
-            loading = false;
-            StateHasChanged();
-            Nav.NavigateTo("/login");
-            return;
-        }
-
-        Api.SetToken(token);
-
         try
         {
-            dealers = await Api.GetDealersAsync();
-            accounts = await Api.GetAccountsAsync();
-        }
-        catch (HttpRequestException ex)
-        {
-            // Handle 401 explicitly
-            if (ex.Message.Contains("401"))
+            var token = await AuthService.GetTokenAsync();
+            if (string.IsNullOrWhiteSpace(token))
             {
-                isAuthorized = false;
                 await AuthService.LogoutAsync();
-                Nav.NavigateTo("/login");
+                Nav.NavigateTo("/login", forceLoad: true);
                 return;
             }
 
+            // Ensure Authorization header is set for Api calls
+            Api.SetToken(token);
+
+            // Try get role from stored value; fallback to decode token
+            string? role = null;
+            try
+            {
+                role = await AuthService.GetRoleAsync();
+            }
+            catch
+            {
+                role = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(role))
+            {
+                // decode JWT payload to find role claim (robust fallback)
+                try
+                {
+                    var parts = token.Trim('"').Split('.');
+                    if (parts.Length >= 2)
+                    {
+                        var payload = parts[1].Replace('-', '+').Replace('_', '/');
+                        switch (payload.Length % 4)
+                        {
+                            case 2: payload += "=="; break;
+                            case 3: payload += "="; break;
+                        }
+                        var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(payload));
+                        using var doc = System.Text.Json.JsonDocument.Parse(json);
+                        var root = doc.RootElement;
+
+                        if (root.TryGetProperty("role", out var r) && r.ValueKind == System.Text.Json.JsonValueKind.String)
+                            role = r.GetString();
+                        else if (root.TryGetProperty("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", out var r2) && r2.ValueKind == System.Text.Json.JsonValueKind.String)
+                            role = r2.GetString();
+                        else
+                        {
+                            // find any claim name containing "role"
+                            foreach (var p in root.EnumerateObject())
+                            {
+                                if (p.Name.IndexOf("role", StringComparison.OrdinalIgnoreCase) >= 0 && p.Value.ValueKind == System.Text.Json.JsonValueKind.String)
+                                {
+                                    role = p.Value.GetString();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    role = null;
+                }
+            }
+
+            // Enforce admin-only access
+            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                isAuthorized = false;
+                loading = false;
+                StateHasChanged();
+                Nav.NavigateTo("/", forceLoad: true);
+                return;
+            }
+
+            // Load protected data now that we have token + role
+            dealers = await Api.GetDealersAsync();
+            accounts = await Api.GetAccountsAsync();
+        }
+        catch (System.Net.Http.HttpRequestException ex)
+        {
+            // handle unauthorized explicitly
+            if (ex.Message.Contains("401") || ex.Message.Contains("Unauthorized"))
+            {
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            dealerMsg = ex.Message;
+        }
+        catch (Exception ex)
+        {
             dealerMsg = ex.Message;
         }
         finally
