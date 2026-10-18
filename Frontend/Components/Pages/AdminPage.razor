@@ -22,37 +22,10 @@ else if (!isAuthorized)
 else
 {
     <div class="row g-3">
+        <!-- Create Customer -->
         <div class="col-md-6">
             <div class="card">
-                <div class="card-header">Create Dealer</div>
-                <div class="card-body">
-                    <EditForm Model="createDealerModel" OnValidSubmit="HandleCreateDealer">
-                        <div class="mb-2">
-                            <InputText class="form-control" @bind-Value="createDealerModel.Name" placeholder="Dealer name" />
-                        </div>
-                        <button class="btn btn-primary" disabled="@isProcessingDealer">
-                            @if (isProcessingDealer)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                <span>Creating...</span>
-                            }
-                            else
-                            {
-                                <span>Create Dealer</span>
-                            }
-                        </button>
-                        @if (!string.IsNullOrWhiteSpace(dealerMsg))
-                        {
-                            <div class="mt-2 text-muted">@dealerMsg</div>
-                        }
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Create Customer (under dealer)</div>
+                <div class="card-header">Create Customer</div>
                 <div class="card-body">
                     <EditForm Model="createCustomerModel" OnValidSubmit="HandleCreateCustomer">
                         <div class="mb-2">
@@ -65,9 +38,11 @@ else
                                 }
                             </select>
                         </div>
+
                         <div class="mb-2">
                             <InputText class="form-control" @bind-Value="createCustomerModel.Name" placeholder="Customer name" />
                         </div>
+
                         <button class="btn btn-primary" disabled="@isProcessingCustomer">
                             @if (isProcessingCustomer)
                             {
@@ -79,6 +54,7 @@ else
                                 <span>Create Customer</span>
                             }
                         </button>
+
                         @if (!string.IsNullOrWhiteSpace(customerMsg))
                         {
                             <div class="mt-2 text-muted">@customerMsg</div>
@@ -88,13 +64,23 @@ else
             </div>
         </div>
 
-        <div class="col-12">
+        <!-- Create Account (Admin can create Admin/Dealer/Customer) -->
+        <div class="col-md-6">
             <div class="card">
-                <div class="card-header">Create Account (Admin)</div>
+                <div class="card-header">Create Account</div>
                 <div class="card-body">
                     <EditForm Model="createAccountModel" OnValidSubmit="HandleCreateAccount">
                         <div class="row g-2">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" @bind="createAccountModel.Role">
+                                    <option value="Admin">Admin</option>
+                                    <option value="Dealer">Dealer</option>
+                                    <option value="Customer">Customer</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-8">
                                 <label class="form-label">Dealer (optional)</label>
                                 <select class="form-select" @bind="SelectedDealerIdForAccount">
                                     <option value="">-- optional dealer --</option>
@@ -105,9 +91,24 @@ else
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Name</label>
+                                <InputText class="form-control" @bind-Value="createAccountModel.Name" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <InputText class="form-control" @bind-Value="createAccountModel.Email" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Temp password</label>
+                                <InputText class="form-control" @bind-Value="createAccountModel.TempPassword" />
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label">Customer (optional)</label>
-                                <select class="form-select" @bind="selectedCustomerIdForAccount">
+                                <select class="form-select" @bind="createAccountModel.CustomerId">
                                     <option value="">-- optional customer --</option>
                                     @foreach (var c in customersForSelectedDealer)
                                     {
@@ -115,26 +116,6 @@ else
                                     }
                                 </select>
                             </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Name</label>
-                                <InputText class="form-control" @bind-Value="createAccountModel.Name" />
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Email</label>
-                                <InputText class="form-control" @bind-Value="createAccountModel.Email" />
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label">Temp password</label>
-                                <InputText class="form-control" @bind-Value="createAccountModel.TempPassword" />
-                            </div>
-                        </div>
-
-                        <div class="mt-2">
-                            <label class="form-label">Role</label>
-                            <InputText class="form-control" @bind-Value="createAccountModel.Role" placeholder="Admin/Dealer/Customer" />
                         </div>
 
                         <div class="mt-3">
@@ -149,28 +130,43 @@ else
                                     <span>Create Account</span>
                                 }
                             </button>
+
                             @if (!string.IsNullOrWhiteSpace(accountMsg))
                             {
                                 <div class="mt-2 text-muted">@accountMsg</div>
                             }
                         </div>
                     </EditForm>
+
+                    <div class="form-text mt-2">
+                        Tip: To create a Dealer account choose role "Dealer". To create a Customer choose "Customer" and pick a Dealer.
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Assign Unit -->
         <div class="col-12">
             <div class="card">
                 <div class="card-header">Assign Unit to Account</div>
                 <div class="card-body">
-                    <div class="row g-2">
-                        <div class="col-md-4">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Filter</label>
+                            <select class="form-select" @bind="assignAccountFilter">
+                                <option value="All">All accounts</option>
+                                <option value="Dealers">Dealers</option>
+                                <option value="Customers">Customers</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-5">
                             <label class="form-label">Account</label>
                             <select class="form-select" @bind="assignAccountId">
                                 <option value="">-- choose account --</option>
-                                @foreach (var a in accounts)
+                                @foreach (var a in FilteredAccounts)
                                 {
-                                    <option value="@a.Id">@a.Email (@a.Name)</option>
+                                    <option value="@a.Id">@a.Email (@a.Name) - @a.Role</option>
                                 }
                             </select>
                         </div>
@@ -180,34 +176,25 @@ else
                             <InputText class="form-control" @bind-Value="assignMac" />
                         </div>
 
-                        <div class="col-md-3">
-                            <label class="form-label">Unit name</label>
-                            <InputText class="form-control" @bind-Value="assignUnitName" />
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label">Location</label>
-                            <InputText class="form-control" @bind-Value="assignLocation" />
+                        <div class="col-md-2">
+                            <button class="btn btn-primary w-100" @onclick="AssignUnit" disabled="@isProcessingAssign">
+                                @if (isProcessingAssign)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Assigning...</span>
+                                }
+                                else
+                                {
+                                    <span>Assign Unit</span>
+                                }
+                            </button>
                         </div>
                     </div>
 
-                    <div class="mt-3">
-                        <button class="btn btn-primary" @onclick="AssignUnit" disabled="@isProcessingAssign">
-                            @if (isProcessingAssign)
-                            {
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                <span>Assigning...</span>
-                            }
-                            else
-                            {
-                                <span>Assign Unit</span>
-                            }
-                        </button>
-                        @if (!string.IsNullOrWhiteSpace(assignMsg))
-                        {
-                            <div class="mt-2 text-muted">@assignMsg</div>
-                        }
-                    </div>
+                    @if (!string.IsNullOrWhiteSpace(assignMsg))
+                    {
+                        <div class="mt-2 text-muted">@assignMsg</div>
+                    }
                 </div>
             </div>
         </div>
@@ -216,37 +203,25 @@ else
 
 @code {
     bool loading = true;
-    bool isAuthorized = true;
+    bool isAuthorized = false;
     bool checkedLoginState;
 
     List<DealerDto> dealers = new();
     List<CustomerDto> customersForSelectedDealer = new();
     List<AccountDto> accounts = new();
 
-    // form models
-    CreateDealerDto createDealerModel = new();
+    // models
     CreateCustomerDto createCustomerModel = new();
     CreateAccountDto createAccountModel = new();
 
-    // messages & flags
-    string dealerMsg = "";
-    string customerMsg = "";
-    string accountMsg = "";
-    string assignMsg = "";
-
-    bool isProcessingDealer = false;
+    // flags and messages
     bool isProcessingCustomer = false;
     bool isProcessingAccount = false;
     bool isProcessingAssign = false;
 
-    Guid? selectedDealerId;
-    Guid? selectedDealerIdForAccount;
-    Guid? selectedCustomerIdForAccount;
-
-    Guid? assignAccountId = null;
-    string assignMac = "";
-    string assignUnitName = "";
-    string assignLocation = "";
+    string customerMsg = "";
+    string accountMsg = "";
+    string assignMsg = "";
 
     Guid? SelectedDealerId
     {
@@ -260,7 +235,7 @@ else
             }
         }
     }
-
+    Guid? selectedDealerId;
     Guid? SelectedDealerIdForAccount
     {
         get => selectedDealerIdForAccount;
@@ -273,6 +248,22 @@ else
             }
         }
     }
+    Guid? selectedDealerIdForAccount;
+
+    Guid? selectedCustomerIdForAccount;
+    Guid? assignAccountId = null;
+    string assignMac = "";
+    string assignUnitName = "";
+    string assignLocation = "";
+    string assignAccountFilter = "All";
+
+    IEnumerable<AccountDto> FilteredAccounts =>
+        assignAccountFilter switch
+        {
+            "Dealers" => accounts.Where(a => string.Equals(a.Role?.ToString(), "Dealer", StringComparison.OrdinalIgnoreCase)),
+            "Customers" => accounts.Where(a => string.Equals(a.Role?.ToString(), "Customer", StringComparison.OrdinalIgnoreCase)),
+            _ => accounts
+        };
 
     protected override void OnInitialized()
     {
@@ -304,6 +295,8 @@ else
             return;
         }
 
+        isAuthorized = true;
+
         Api.SetToken(await AuthService.GetTokenAsync());
 
         try
@@ -319,7 +312,7 @@ else
                 Nav.NavigateTo("/login");
                 return;
             }
-            dealerMsg = ex.Message;
+            customerMsg = ex.Message;
         }
         finally
         {
@@ -349,21 +342,6 @@ else
         }
     }
 
-    async Task HandleCreateDealer()
-    {
-        isProcessingDealer = true;
-        dealerMsg = "";
-        try
-        {
-            var res = await Api.CreateDealerAsync(createDealerModel);
-            dealerMsg = $"Dealer created: {res?.Id}";
-            dealers = await Api.GetDealersAsync();
-            createDealerModel = new();
-        }
-        catch (Exception ex) { dealerMsg = ex.Message; }
-        finally { isProcessingDealer = false; }
-    }
-
     async Task HandleCreateCustomer()
     {
         isProcessingCustomer = true;
@@ -371,14 +349,20 @@ else
         try
         {
             if (SelectedDealerId == null) { customerMsg = "Select dealer first."; return; }
-            createCustomerModel.DealerId = SelectedDealerId;
-            var res = await Api.CreateCustomerAsync(createCustomerModel);
+            var dto = new CreateCustomerDto { Name = createCustomerModel.Name, DealerId = SelectedDealerId };
+            var res = await Api.CreateCustomerAsync(dto);
             customerMsg = $"Customer created: {res?.Id}";
             customersForSelectedDealer = await Api.GetCustomersAsync(SelectedDealerId);
             createCustomerModel = new();
         }
-        catch (Exception ex) { customerMsg = ex.Message; }
-        finally { isProcessingCustomer = false; }
+        catch (Exception ex)
+        {
+            customerMsg = ex.Message;
+        }
+        finally
+        {
+            isProcessingCustomer = false;
+        }
     }
 
     async Task HandleCreateAccount()
@@ -388,14 +372,20 @@ else
         try
         {
             createAccountModel.DealerId = SelectedDealerIdForAccount;
-            createAccountModel.CustomerId = selectedCustomerIdForAccount;
+            createAccountModel.CustomerId = createAccountModel.CustomerId; // may be null
             var res = await Api.CreateAccountAsync(createAccountModel);
             accountMsg = $"Account created: {res?.Id}";
             accounts = await Api.GetAccountsAsync();
             createAccountModel = new();
         }
-        catch (Exception ex) { accountMsg = ex.Message; }
-        finally { isProcessingAccount = false; }
+        catch (Exception ex)
+        {
+            accountMsg = ex.Message;
+        }
+        finally
+        {
+            isProcessingAccount = false;
+        }
     }
 
     async Task AssignUnit()
@@ -414,9 +404,15 @@ else
             };
             var res = await Api.AssignUnitAsync(dto);
             assignMsg = $"Unit assigned: {res?.MacAddress}";
-            assignMac = assignUnitName = assignLocation = "";
+            // refresh units/accounts if needed
         }
-        catch (Exception ex) { assignMsg = ex.Message; }
-        finally { isProcessingAssign = false; }
+        catch (Exception ex)
+        {
+            assignMsg = ex.Message;
+        }
+        finally
+        {
+            isProcessingAssign = false;
+        }
     }
 }
