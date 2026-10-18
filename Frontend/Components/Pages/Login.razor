@@ -1,46 +1,82 @@
 ﻿@page "/login"
-@using Microsoft.AspNetCore.Components.Authorization
-@using Frontend.Services
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using Frontend.Models
 @inject Frontend.Services.AuthService AuthService
 @inject AuthenticationStateProvider AuthStateProvider
+@inject Frontend.Services.ApiService ApiService
 @inject NavigationManager Navigation
+
+
 
 <h3>Login</h3>
 
-<input @bind="email" placeholder="Email" />
-<input @bind="password" placeholder="Password" type="password" />
-<button @onclick="DoLogin">Login</button>
-<div>@message</div>
+<div class="mb-3">
+    <label class="form-label">Email</label>
+    <input class="form-control" @bind="model.Email" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Password</label>
+    <input class="form-control" type="password" @bind="model.Password" />
+</div>
+
+<button class="btn btn-primary" @onclick="LoginAsync" disabled="@isLoading">
+    @(isLoading ? "Logger ind..." : "Login")
+</button>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
 
 @code {
-    string email = "";
-    string password = "";
-    string message = "";
+    private LoginRequestDto model = new();
+    private string? errorMessage;
+    private bool isLoading;
+    private bool checkedLoginState;
 
-    async Task DoLogin()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender || checkedLoginState)
+            return;
+
+        checkedLoginState = true;
+
+        var token = await AuthService.GetTokenAsync();
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            ApiService.SetToken(token);
+            Navigation.NavigateTo("/dashboard", forceLoad: true);
+        }
+    }
+
+    private async Task LoginAsync()
+    {
+        errorMessage = null;
+        isLoading = true;
+
         try
         {
-            var res = await AuthService.LoginAsync(new Frontend.Models.LoginRequestDto { Email = email, Password = password });
-            var token = await AuthService.GetTokenAsync();
-            if (!string.IsNullOrWhiteSpace(token))
+            var result = await AuthService.LoginAsync(model);
+
+            if (result is null || string.IsNullOrWhiteSpace(result.Token))
             {
-                // set API header
-                // assume ApiService is accessible via AuthService or inject ApiService here
-                // await AuthService._apiService.SetToken(token); // (example—use your ApiService)
+                errorMessage = "Login failed. Check email and password.";
+                return;
             }
 
-            // notify JwtAuthStateProvider to refresh authentication state
-            if (AuthStateProvider is JwtAuthStateProvider jwt)
-            {
-                await jwt.NotifyAuthenticationStateFromLocalStorageAsync();
-            }
-
-            Navigation.NavigateTo("/", forceLoad: false);
+            Navigation.NavigateTo("/dashboard", forceLoad: true);
         }
         catch (Exception ex)
         {
-            message = ex.Message;
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 }
