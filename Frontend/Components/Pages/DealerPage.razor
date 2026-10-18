@@ -1,6 +1,11 @@
-﻿Frontend\Pages\Dealer\DealerPanel.razor
-@page "/dealer"
+﻿@page "/dealer"
+@using Microsoft.AspNetCore.Authorization
 @inject Frontend.Services.ApiService Api
+@inject Frontend.Services.AuthService AuthService
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+
+@attribute [Authorize(Roles = "Dealer")]
 
 <h3>Dealer panel</h3>
 
@@ -67,8 +72,36 @@
 
     protected override async Task OnInitializedAsync()
     {
-        customers = await Api.GetCustomersAsync(asDealer: true);
-        accounts = await Api.GetAccountsAsync(asDealer: true);
+        // Check authentication and role
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user?.Identity?.IsAuthenticated != true || !user.IsInRole("Dealer"))
+        {
+            // Optional: clear local token if unauthorized
+            await AuthService.LogoutAsync();
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        // Ensure API has the token for backend calls
+        var token = await AuthService.GetTokenAsync();
+        Api.SetToken(token);
+
+        try
+        {
+            customers = await Api.GetCustomersAsync(asDealer: true);
+            accounts = await Api.GetAccountsAsync(asDealer: true);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.Message.Contains("401"))
+            {
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo("/login");
+                return;
+            }
+            msg = ex.Message;
+        }
     }
 
     async Task CreateCustomer()

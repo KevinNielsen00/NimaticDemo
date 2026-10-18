@@ -1,6 +1,7 @@
-﻿using System.Net.Http.Json;
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using Frontend.Models;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Net.Http.Json;
 
 namespace Frontend.Services;
 
@@ -9,14 +10,16 @@ public class AuthService
     private readonly HttpClient _httpClient;
     private readonly ApiService _apiService;
     private readonly ILocalStorageService _localStorage;
+    private readonly AuthenticationStateProvider _authStateProvider;
 
     private const string TOKEN_KEY = "authToken";
 
-    public AuthService(HttpClient httpClient, ApiService apiService, ILocalStorageService localStorage)
+    public AuthService(HttpClient httpClient, ApiService apiService, ILocalStorageService localStorage, AuthenticationStateProvider authStateProvider)
     {
         _httpClient = httpClient;
         _apiService = apiService;
         _localStorage = localStorage;
+        _authStateProvider = authStateProvider;
     }
 
     public async Task<AuthResponse?> LoginAsync(LoginRequestDto request)
@@ -35,6 +38,11 @@ public class AuthService
         {
             await _localStorage.SetItemAsync(TOKEN_KEY, result.Token);
             _apiService.SetToken(result.Token);
+
+            if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
+            {
+                jwtProvider.NotifyUserAuthentication(result.Token);
+            }
         }
 
         return result;
@@ -55,6 +63,11 @@ public class AuthService
     {
         await _localStorage.RemoveItemAsync(TOKEN_KEY);
         _apiService.SetToken(null);
+
+        if (_authStateProvider is JwtAuthenticationStateProvider jwtProvider)
+        {
+            jwtProvider.NotifyUserLogout();
+        }
     }
 
     public async Task ChangePasswordAsync(ChangePasswordDto dto)

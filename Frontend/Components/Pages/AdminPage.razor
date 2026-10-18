@@ -1,8 +1,11 @@
 ﻿@page "/admin"
 @using Frontend.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
 @inject Frontend.Services.ApiService Api
 @inject Frontend.Services.AuthService AuthService
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
 
 <h3>Admin panel</h3>
 
@@ -133,6 +136,48 @@ else
                 selectedDealerIdForAccount = value;
                 _ = LoadCustomersForDealerAsync(selectedDealerIdForAccount);
             }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        loading = true;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated != true || !user.IsInRole("Admin"))
+        {
+            isAuthorized = false;
+            loading = false;
+            StateHasChanged();
+            await AuthService.LogoutAsync();
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        var token = await AuthService.GetTokenAsync();
+        Api.SetToken(token);
+
+        try
+        {
+            dealers = await Api.GetDealersAsync();
+            accounts = await Api.GetAccountsAsync();
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.Message.Contains("401"))
+            {
+                isAuthorized = false;
+                await AuthService.LogoutAsync();
+                Nav.NavigateTo("/login");
+                return;
+            }
+            dealerMsg = ex.Message;
+        }
+        finally
+        {
+            loading = false;
         }
     }
 
