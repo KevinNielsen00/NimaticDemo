@@ -1,4 +1,6 @@
-﻿@page "/dashboard"
+﻿@using Microsoft.AspNetCore.Authorization
+@page "/dashboard"
+@attribute [Authorize]
 @using Frontend.Models
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Frontend.Services.ApiService ApiService

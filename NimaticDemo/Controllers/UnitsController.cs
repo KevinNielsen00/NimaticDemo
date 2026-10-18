@@ -6,6 +6,7 @@ using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Backend.Controllers;
 
@@ -222,49 +223,64 @@ public class UnitsController : ControllerBase
 
     private IQueryable<Unit>? GetAccessibleUnitsQuery()
     {
-        var query = _db.Units
-            .Include(u => u.Account)
-            .AsQueryable();
+        if (!User.Identity?.IsAuthenticated ?? true) return null;
 
-        if (User.IsInRole(nameof(AccountRole.Admin)))
-            return query;
-
-        if (User.IsInRole(nameof(AccountRole.Dealer)))
+        if (User.IsInRole(nameof(AccountRole.Admin)) || User.IsInRole("Admin"))
         {
-            var dealerId = GetDealerId();
+            return _db.Units.AsQueryable();
+        }
 
+        var accountId = GetAccountId();
+        if (accountId == null) return null;
+
+        var account = _db.Accounts
+            .AsNoTracking()
+            .FirstOrDefault(a => a.Id == accountId.Value);
+
+        if (account == null) return null;
+
+        if (account.Role == AccountRole.Dealer)
+        {
+            var dealerId = account.DealerId;
             if (dealerId == null)
-                return null;
+                return _db.Units.Where(u => u.AccountId == account.Id);
 
-            return query.Where(u =>
-                u.Account != null &&
-                u.Account.DealerId == dealerId.Value);
+            // select nullable GUIDs so Contains matches u.AccountId/u.CustomerId (both nullable)
+            var dealerAccounts = _db.Accounts
+                .Where(a => a.DealerId == dealerId)
+                .Select(a => (Guid?)a.Id);
+
+            var dealerCustomers = _db.Customers
+                .Where(c => c.DealerId == dealerId)
+                .Select(c => (Guid?)c.Id);
+
+            return _db.Units.Where(u =>
+                // unit assigned to any account of this dealer
+                (u.AccountId.HasValue && dealerAccounts.Contains(u.AccountId))
+                // or unit belongs to a customer of this dealer
+                || (u.CustomerId.HasValue && dealerCustomers.Contains(u.CustomerId))
+                // or unit assigned directly to the dealer's own account
+                || u.AccountId == account.Id
+            );
         }
 
-        if (User.IsInRole(nameof(AccountRole.Customer)))
+        if (account.Role == AccountRole.Customer)
         {
-            var accountId = GetAccountId();
-
-            if (accountId == null)
-                return null;
-
-            return query.Where(u => u.AccountId == accountId.Value);
+            var custId = account.CustomerId;
+            return _db.Units.Where(u =>
+                u.AccountId == account.Id
+                || (custId.HasValue && u.CustomerId.HasValue && u.CustomerId == custId)
+            );
         }
 
-        return null;
+        return _db.Units.Where(u => u.AccountId == account.Id);
     }
 
     private Guid? GetAccountId()
     {
-        var accountIdClaim =
-            User.FindFirst("accountId")?.Value ??
-            User.FindFirst("sub")?.Value ??
-            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-        if (!Guid.TryParse(accountIdClaim, out var accountId))
-            return null;
-
-        return accountId;
+        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        if (string.IsNullOrWhiteSpace(idClaim)) return null;
+        return Guid.TryParse(idClaim, out var id) ? id : null;
     }
 
     private Guid? GetDealerId()
