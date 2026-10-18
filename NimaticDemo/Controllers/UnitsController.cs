@@ -233,10 +233,7 @@ public class UnitsController : ControllerBase
         var accountId = GetAccountId();
         if (accountId == null) return null;
 
-        var account = _db.Accounts
-            .AsNoTracking()
-            .FirstOrDefault(a => a.Id == accountId.Value);
-
+        var account = _db.Accounts.AsNoTracking().FirstOrDefault(a => a.Id == accountId.Value);
         if (account == null) return null;
 
         if (account.Role == AccountRole.Dealer)
@@ -245,21 +242,12 @@ public class UnitsController : ControllerBase
             if (dealerId == null)
                 return _db.Units.Where(u => u.AccountId == account.Id);
 
-            // select nullable GUIDs so Contains matches u.AccountId/u.CustomerId (both nullable)
-            var dealerAccounts = _db.Accounts
-                .Where(a => a.DealerId == dealerId)
-                .Select(a => (Guid?)a.Id);
-
-            var dealerCustomers = _db.Customers
-                .Where(c => c.DealerId == dealerId)
-                .Select(c => (Guid?)c.Id);
+            var dealerAccounts = _db.Accounts.Where(a => a.DealerId == dealerId).Select(a => (Guid?)a.Id);
+            var dealerCustomers = _db.Customers.Where(c => c.DealerId == dealerId).Select(c => (Guid?)c.Id);
 
             return _db.Units.Where(u =>
-                // unit assigned to any account of this dealer
-                (u.AccountId.HasValue && dealerAccounts.Contains(u.AccountId))
-                // or unit belongs to a customer of this dealer
+                (u.AccountId != Guid.Empty && dealerAccounts.Contains(u.AccountId))
                 || (u.CustomerId.HasValue && dealerCustomers.Contains(u.CustomerId))
-                // or unit assigned directly to the dealer's own account
                 || u.AccountId == account.Id
             );
         }
@@ -278,7 +266,8 @@ public class UnitsController : ControllerBase
 
     private Guid? GetAccountId()
     {
-        var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                      ?? User.FindFirst("sub")?.Value;
         if (string.IsNullOrWhiteSpace(idClaim)) return null;
         return Guid.TryParse(idClaim, out var id) ? id : null;
     }

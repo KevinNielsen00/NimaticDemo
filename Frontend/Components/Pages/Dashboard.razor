@@ -1,7 +1,5 @@
 ﻿@using Microsoft.AspNetCore.SignalR.Client
 @page "/dashboard"
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 @implements IAsyncDisposable
 @inject Frontend.Services.AuthService AuthService
@@ -11,7 +9,11 @@
 
 <h3>Dashboard</h3>
 
-@if (isLoading)
+@if (!hasToken)
+{
+    <div class="alert alert-warning">You are not signed in. Please <a href="/login">login</a>.</div>
+}
+else if (isLoading)
 {
     <p>Loading units...</p>
 }
@@ -25,7 +27,6 @@ else
         @foreach (var unit in units)
         {
             var latest = latestMeasurements.GetValueOrDefault(unit.Id);
-
             <div class="col-md-4 mb-3">
                 <div class="card shadow-sm p-3">
                     <h5>@(unit.UnitName ?? "Unnamed Unit")</h5>
@@ -42,21 +43,11 @@ else
                         </span>
 
                         <h2>@latest.FillPercentage.ToString("0")% Full</h2>
-
-                        <p class="mb-1">
-                            <b>Status:</b> @GetStatusDescription(latest.FillPercentage)
-                        </p>
-
-                        <p class="mb-1">
-                            <b>Last update:</b>
-                            @GetTimeAgo(latest.MeasuredAt)
-                        </p>
+                        <p class="mb-1"><b>Status:</b> @GetStatusDescription(latest.FillPercentage)</p>
+                        <p class="mb-1"><b>Last update:</b> @GetTimeAgo(latest.MeasuredAt)</p>
                     }
 
-                    <button class="btn btn-primary mt-2"
-                            @onclick="() => GoToUnit(unit.Id)">
-                        View Data
-                    </button>
+                    <button class="btn btn-primary mt-2" @onclick="() => GoToUnit(unit.Id)">View Data</button>
                 </div>
             </div>
         }
@@ -64,63 +55,81 @@ else
 }
 
 @code {
-    private List<UnitDto> units = new();
-    private Dictionary<Guid, MeasurementDto?> latestMeasurements = new();
+    private List<Frontend.Models.UnitDto> units = new();
+    private Dictionary<Guid, Frontend.Models.MeasurementDto?> latestMeasurements = new();
     private HubConnection? hubConnection;
 
     bool isLoading = true;
     bool hasToken = false;
-    bool isAuthenticated = false;
-    string userName = "";
-    List<string> roles = new();
+    bool initialized;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
+        if (initialized) return;
+        initialized = true;
 
-        // hent token (viser om localStorage-access virker)
+        // read token but do NOT force navigation here (avoid loops)
         var token = await AuthService.GetTokenAsync();
         hasToken = !string.IsNullOrWhiteSpace(token);
 
-        // authentication state
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        isAuthenticated = user?.Identity?.IsAuthenticated == true;
-        userName = user?.Identity?.Name ?? "(none)";
-        roles = user?.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value).ToList()
-                ?? new List<string>();
-
-        // DON'T auto-redirect while debugging — comment out navigation to diagnose loop
-        // if (!isAuthenticated) Navigation.NavigateTo("/login");
-        // if (!roles.Contains("Admin")) Navigation.NavigateTo("/dashboard");
-
-        // normal loading code (call ApiService only if authenticated)
-        if (isAuthenticated)
+        if (!hasToken)
         {
-            ApiService.SetToken(token);
-            await LoadDashboardData();
+            isLoading = false;
+            StateHasChanged();
+            return;
         }
 
-        isLoading = false;
-        StateHasChanged();
+        // set token and load units — backend filters by role
+        ApiService.SetToken(token);
+        try
+        {
+            await LoadDashboardData();
+
+            // start hub after initial load
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("http://91.98.30.56:5000/measurementHub", options => { options.AccessTokenProvider = () => Task.FromResult(token.Trim('"')); })
+                .WithAutomaticReconnect()
+                .Build();
+
+            hubConnection.On<Guid>("MeasurementUpdated", async unitId =>
+            {
+                await LoadLatestMeasurementForUnit(unitId);
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await hubConnection.StartAsync();
+        }
+        catch (Exception)
+        {
+            isLoading = false;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task LoadDashboardData()
     {
         units = await ApiService.GetUnitsAsync();
-
         latestMeasurements.Clear();
-
         foreach (var unit in units)
-        {
             await LoadLatestMeasurementForUnit(unit.Id);
-        }
     }
 
     private async Task LoadLatestMeasurementForUnit(Guid unitId)
     {
         var measurements = await ApiService.GetMeasurementsAsync(unitId);
         latestMeasurements[unitId] = measurements.FirstOrDefault();
+    }
+
+    private void GoToUnit(Guid unitId) => Navigation.NavigateTo($"/unit/{unitId}");
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+            await hubConnection.DisposeAsync();
     }
 
     private string GetStatusBadgeClass(double percentage)
@@ -135,19 +144,6 @@ else
         if (percentage < 15) return "Critical";
         if (percentage <= 35) return "Needs Attention";
         return "Good";
-    }
-
-    private void GoToUnit(Guid unitId)
-    {
-        Navigation.NavigateTo($"/unit/{unitId}");
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (hubConnection is not null)
-        {
-            await hubConnection.DisposeAsync();
-        }
     }
 
     private string GetStatusDescription(double percentage)
