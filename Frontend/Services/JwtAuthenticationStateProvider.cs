@@ -22,12 +22,10 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 		string? token = null;
 		try
 		{
-			// localStorage kan fejle i server/kørselstidspunkter uden JS interop - beskyt med try/catch
 			token = await _localStorage.GetItemAsync<string>(TOKEN_KEY);
 		}
 		catch
 		{
-			// Hvis vi ikke kan nå localStorage, treat as anonymous (do NOT rethrow)
 			return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 		}
 
@@ -44,7 +42,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 		}
 		catch
 		{
-			// Hvis token er invalid eller parsing fejler, return anonym
 			_apiService.SetToken(null);
 			return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 		}
@@ -52,11 +49,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
 	public void NotifyUserAuthentication(string token)
 	{
-		if (string.IsNullOrWhiteSpace(token))
-		{
-			NotifyUserLogout();
-			return;
-		}
+		if (string.IsNullOrWhiteSpace(token)) { NotifyUserLogout(); return; }
 
 		try
 		{
@@ -68,7 +61,6 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 		}
 		catch
 		{
-			// ignore parsing errors here
 			NotifyUserLogout();
 		}
 	}
@@ -76,8 +68,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 	public void NotifyUserLogout()
 	{
 		_apiService.SetToken(null);
-		var anon = new ClaimsPrincipal(new ClaimsIdentity());
-		NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anon)));
+		NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
 	}
 
 	private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
@@ -89,10 +80,7 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
 		var roleClaimTypes = new[] { "role", "roles", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" };
 		var roles = token.Claims.Where(c => roleClaimTypes.Contains(c.Type, StringComparer.OrdinalIgnoreCase)).ToList();
-		foreach (var r in roles)
-		{
-			claims.Add(new Claim(ClaimTypes.Role, r.Value));
-		}
+		foreach (var r in roles) claims.Add(new Claim(ClaimTypes.Role, r.Value));
 
 		return claims;
 	}

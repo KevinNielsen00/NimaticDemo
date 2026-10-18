@@ -2,8 +2,17 @@ using Blazored.LocalStorage;
 using Frontend.Components;
 using Frontend.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+var keysFolder = "/keys"; 
+Directory.CreateDirectory(keysFolder);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(keysFolder))
+    .SetApplicationName("NimaticDemo");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -23,6 +32,13 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddBlazoredLocalStorage();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options => {
+        options.LoginPath = "/login";
+        options.Cookie.HttpOnly = true;
+    });
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +52,8 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
