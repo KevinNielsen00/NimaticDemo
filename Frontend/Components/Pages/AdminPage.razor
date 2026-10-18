@@ -50,11 +50,6 @@ else
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label">Dealer (entity) - read-only</label>
-                                <input class="form-control" value="@(createAccountModel.DealerId?.ToString() ?? "")" disabled />
-                            </div>
-
                             <div class="col-md-6">
                                 <label class="form-label">Name</label>
                                 <InputText class="form-control" @bind-Value="createAccountModel.Name" />
