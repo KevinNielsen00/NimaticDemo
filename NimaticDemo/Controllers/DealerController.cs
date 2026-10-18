@@ -113,38 +113,32 @@ public class DealerController : ControllerBase
         var account = await _db.Accounts.FindAsync(dto.AccountId);
         if (account == null) return BadRequest("Account not found.");
 
-        // Ensure the account belongs to this dealer (either account is dealer or its customer belongs to dealer)
-        if (account.DealerId.HasValue && account.DealerId != dealerId &&
-            !(account.CustomerId.HasValue && _db.Customers.Any(c => c.Id == account.CustomerId && c.DealerId == dealerId)))
-        {
+        // ensure the account belongs to this dealer
+        var accountBelongsToDealer = (account.DealerId.HasValue && account.DealerId == dealerId)
+                                      || (account.CustomerId.HasValue && _db.Customers.Any(c => c.Id == account.CustomerId && c.DealerId == dealerId))
+                                      || account.Id == account.Id && account.DealerId == dealerId; // defensive
+
+        if (!accountBelongsToDealer)
             return Forbid();
-        }
 
         var mac = dto.MacAddress.Trim().ToUpperInvariant();
+
+        // require unit exists
         var unit = await _db.Units.FirstOrDefaultAsync(u => u.MacAddress.ToUpper() == mac);
-
         if (unit == null)
-        {
-            unit = new Unit
-            {
-                MacAddress = mac,
-                AccountId = account.Id,
-                UnitName = string.IsNullOrWhiteSpace(dto.UnitName) ? null : dto.UnitName.Trim(),
-                Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim(),
-                CustomerId = account.CustomerId,
-                CreatedAt = DateTime.UtcNow
-            };
-            _db.Units.Add(unit);
-        }
-        else
-        {
-            unit.AccountId = account.Id;
-            unit.CustomerId = account.CustomerId;
-            if (!string.IsNullOrWhiteSpace(dto.UnitName)) unit.UnitName = dto.UnitName.Trim();
-            if (!string.IsNullOrWhiteSpace(dto.Location)) unit.Location = dto.Location.Trim();
-            _db.Units.Update(unit);
-        }
+            return NotFound("Unit not found. Register the device before assigning it.");
 
+        if (unit.AccountId == account.Id)
+            return Conflict("Unit is already assigned to this account.");
+
+        // assign/reassign
+        unit.AccountId = account.Id;
+        unit.CustomerId = account.CustomerId;
+        if (!string.IsNullOrWhiteSpace(dto.UnitName)) unit.UnitName = dto.UnitName.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.Location)) unit.Location = dto.Location.Trim();
+        unit.CreatedAt = unit.CreatedAt == default ? DateTime.UtcNow : unit.CreatedAt;
+
+        _db.Units.Update(unit);
         await _db.SaveChangesAsync();
 
         var result = new Backend.DTOs.Units.UnitDto

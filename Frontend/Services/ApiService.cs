@@ -124,7 +124,9 @@ public class ApiService
     {
         var url = asDealer ? BackendBase + "api/dealer/units/assign" : BackendBase + "api/admin/units/assign";
         var resp = await _httpClient.PostAsJsonAsync(url, dto);
-        resp.EnsureSuccessStatusCode();
+        var content = await resp.Content.ReadAsStringAsync();
+        if (!resp.IsSuccessStatusCode)
+            throw new HttpRequestException($"POST {url} failed: {(int)resp.StatusCode} {resp.ReasonPhrase}: {content}");
         return await resp.Content.ReadFromJsonAsync<UnitDto>();
     }
 }

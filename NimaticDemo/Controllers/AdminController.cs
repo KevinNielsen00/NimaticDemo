@@ -141,30 +141,23 @@ public class AdminController : ControllerBase
         if (account == null) return BadRequest("Account not found.");
 
         var mac = dto.MacAddress.Trim().ToUpperInvariant();
+
+        // Do NOT create unit here — require device registration first
         var unit = await _db.Units.FirstOrDefaultAsync(u => u.MacAddress.ToUpper() == mac);
-
         if (unit == null)
-        {
-            unit = new Unit
-            {
-                MacAddress = mac,
-                AccountId = account.Id,
-                UnitName = string.IsNullOrWhiteSpace(dto.UnitName) ? null : dto.UnitName.Trim(),
-                Location = string.IsNullOrWhiteSpace(dto.Location) ? null : dto.Location.Trim(),
-                CustomerId = account.CustomerId,
-                CreatedAt = DateTime.UtcNow
-            };
-            _db.Units.Add(unit);
-        }
-        else
-        {
-            unit.AccountId = account.Id;
-            unit.CustomerId = account.CustomerId;
-            if (!string.IsNullOrWhiteSpace(dto.UnitName)) unit.UnitName = dto.UnitName.Trim();
-            if (!string.IsNullOrWhiteSpace(dto.Location)) unit.Location = dto.Location.Trim();
-            _db.Units.Update(unit);
-        }
+            return NotFound("Unit not found. Register the device before assigning it.");
 
+        if (unit.AccountId == account.Id)
+            return Conflict("Unit is already assigned to this account.");
+
+        // assign/reassign to the requested account
+        unit.AccountId = account.Id;
+        unit.CustomerId = account.CustomerId;
+        if (!string.IsNullOrWhiteSpace(dto.UnitName)) unit.UnitName = dto.UnitName.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.Location)) unit.Location = dto.Location.Trim();
+        unit.CreatedAt = unit.CreatedAt == default ? DateTime.UtcNow : unit.CreatedAt;
+
+        _db.Units.Update(unit);
         await _db.SaveChangesAsync();
 
         var result = new Backend.DTOs.Units.UnitDto
