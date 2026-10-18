@@ -14,14 +14,14 @@
 }
 else if (!isAuthorized)
 {
-    <p>Not authorized. Redirecting...</p>
+    <p>Not authorized. Redirecting to login...</p>
 }
 else
 {
     <section>
         <h4>Create Customer</h4>
         <input @bind="customerName" placeholder="Customer name" />
-        <button @onclick="CreateCustomer">Create Customer</button>
+        <button class="btn btn-primary" @onclick="CreateCustomer" disabled="@isProcessingCustomer">Create Customer</button>
         <div>@msg</div>
     </section>
 
@@ -38,8 +38,16 @@ else
         <input @bind="accName" placeholder="Name" />
         <input @bind="accEmail" placeholder="Email" />
         <input @bind="accTempPassword" placeholder="Temp password" />
-        <input @bind="accRole" placeholder="Role (Customer)" />
-        <button @onclick="CreateAccount">Create Account</button>
+
+        <label>Role</label>
+        <InputSelect @bind-Value="accRole" class="form-select" style="width:200px;">
+            @foreach (AccountRole r in Enum.GetValues(typeof(AccountRole)))
+            {
+                <option value="@r">@r.ToString()</option>
+            }
+        </InputSelect>
+
+        <button class="btn btn-primary" @onclick="CreateAccount" disabled="@isProcessingAccount">Create Account</button>
         <div>@accMsg</div>
     </section>
 
@@ -55,7 +63,7 @@ else
         <input @bind="assignMac" placeholder="MAC address" />
         <input @bind="assignUnitName" placeholder="Unit name" />
         <input @bind="assignLocation" placeholder="Location" />
-        <button @onclick="AssignUnit">Assign Unit</button>
+        <button class="btn btn-primary" @onclick="AssignUnit">Assign Unit</button>
         <div>@assignMsg</div>
     </section>
 }
@@ -64,6 +72,8 @@ else
     bool loading = true;
     bool isAuthorized = false;
     bool checkedLoginState;
+    bool isProcessingCustomer = false;
+    bool isProcessingAccount = false;
 
     List<CustomerDto> customers = new();
     List<AccountDto> accounts = new();
@@ -74,7 +84,7 @@ else
     string accName = "";
     string accEmail = "";
     string accTempPassword = "";
-    string accRole = "Customer";
+    AccountRole accRole = AccountRole.Customer;
     Guid? selectedCustomerIdForAccount;
     string accMsg = "";
 
@@ -83,11 +93,6 @@ else
     string assignUnitName = "";
     string assignLocation = "";
     string assignMsg = "";
-
-    protected override void OnInitialized()
-    {
-        loading = true;
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -143,18 +148,24 @@ else
 
     async Task CreateCustomer()
     {
+        isProcessingCustomer = true;
+        msg = "";
         try
         {
             var dto = new CreateCustomerDto { Name = customerName };
             var res = await Api.CreateCustomerAsync(dto, asDealer: true);
             msg = $"Customer created: {res?.Id}";
             customers = await Api.GetCustomersAsync(asDealer: true);
+            customerName = "";
         }
         catch (Exception ex) { msg = ex.Message; }
+        finally { isProcessingCustomer = false; StateHasChanged(); }
     }
 
     async Task CreateAccount()
     {
+        isProcessingAccount = true;
+        accMsg = "";
         try
         {
             var dto = new CreateAccountDto
@@ -165,11 +176,17 @@ else
                 Role = accRole,
                 CustomerId = selectedCustomerIdForAccount
             };
+
             var res = await Api.CreateAccountAsync(dto, asDealer: true);
             accMsg = $"Account created: {res?.Id}";
             accounts = await Api.GetAccountsAsync(asDealer: true);
+
+            accName = accEmail = accTempPassword = "";
+            accRole = AccountRole.Customer;
+            selectedCustomerIdForAccount = null;
         }
         catch (Exception ex) { accMsg = ex.Message; }
+        finally { isProcessingAccount = false; StateHasChanged(); }
     }
 
     async Task AssignUnit()
@@ -186,7 +203,9 @@ else
             };
             var res = await Api.AssignUnitAsync(dto, asDealer: true);
             assignMsg = $"Unit assigned: {res?.MacAddress}";
+            assignMac = assignUnitName = assignLocation = "";
         }
         catch (Exception ex) { assignMsg = ex.Message; }
+        finally { StateHasChanged(); }
     }
 }

@@ -5,7 +5,7 @@
         public string Name { get; set; } = "";
         public string Email { get; set; } = "";
         public string TempPassword { get; set; } = "";
-        public string Role { get; set; } = "Customer"; // "Admin", "Dealer", "Customer"
+        public AccountRole Role { get; set; } = AccountRole.Customer;
         public Guid? DealerId { get; set; }
         public Guid? CustomerId { get; set; }
     }

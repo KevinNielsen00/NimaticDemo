@@ -74,9 +74,9 @@ else
                             <div class="col-md-4">
                                 <label class="form-label">Role</label>
                                 <select class="form-select" @bind="createAccountModel.Role">
-                                    <option value="Admin">Admin</option>
-                                    <option value="Dealer">Dealer</option>
-                                    <option value="Customer">Customer</option>
+                                    <option value="Admin">@AccountRole.Admin</option>
+                                    <option value="Dealer">@AccountRole.Dealer</option>
+                                    <option value="Customer">@AccountRole.Customer</option>
                                 </select>
                             </div>
 
@@ -260,8 +260,8 @@ else
     IEnumerable<AccountDto> FilteredAccounts =>
         assignAccountFilter switch
         {
-            "Dealers" => accounts.Where(a => string.Equals(a.Role?.ToString(), "Dealer", StringComparison.OrdinalIgnoreCase)),
-            "Customers" => accounts.Where(a => string.Equals(a.Role?.ToString(), "Customer", StringComparison.OrdinalIgnoreCase)),
+            "Dealers" => accounts.Where(a => string.Equals(a.Role, AccountRole.Dealer.ToString(), StringComparison.OrdinalIgnoreCase)),
+            "Customers" => accounts.Where(a => string.Equals(a.Role, AccountRole.Customer.ToString(), StringComparison.OrdinalIgnoreCase)),
             _ => accounts
         };
 
@@ -372,11 +372,25 @@ else
         try
         {
             createAccountModel.DealerId = SelectedDealerIdForAccount;
-            createAccountModel.CustomerId = createAccountModel.CustomerId; // may be null
+            // CustomerId already bound in the form if selected
             var res = await Api.CreateAccountAsync(createAccountModel);
-            accountMsg = $"Account created: {res?.Id}";
-            accounts = await Api.GetAccountsAsync();
-            createAccountModel = new();
+            if (res is null)
+            {
+                accountMsg = "No response from server.";
+            }
+            else
+            {
+                accountMsg = $"Account created: {res.Id} ({res.Email})";
+                accounts = await Api.GetAccountsAsync();
+                createAccountModel = new CreateAccountDto();
+                customersForSelectedDealer = new();
+                SelectedDealerIdForAccount = null;
+                selectedCustomerIdForAccount = null;
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            accountMsg = ex.Message;
         }
         catch (Exception ex)
         {
@@ -404,7 +418,6 @@ else
             };
             var res = await Api.AssignUnitAsync(dto);
             assignMsg = $"Unit assigned: {res?.MacAddress}";
-            // refresh units/accounts if needed
         }
         catch (Exception ex)
         {
