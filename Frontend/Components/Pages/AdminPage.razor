@@ -11,7 +11,7 @@
 @if (loading)
 {
     <div class="d-flex align-items-center">
-        <div class="spinner-border text-primary me-2" role="status"><span class="visually-hidden">Loading...</span></div>
+        <div class="spinner-border text-primary me-2" role="status"></div>
         <span>Loading...</span>
     </div>
 }
@@ -21,31 +21,38 @@ else if (!isAuthorized)
 }
 else
 {
+    <div class="row g-3">
         <!-- Create Account (Admin can create Admin/Dealer/Customer) -->
-        <div class="col-md-6">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">Create Account</div>
                 <div class="card-body">
                     <EditForm Model="createAccountModel" OnValidSubmit="HandleCreateAccount">
                         <div class="row g-2">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Role</label>
-                                <select class="form-select" @bind="createAccountModel.Role">
-                                    <option value="Admin">@AccountRole.Admin</option>
-                                    <option value="Dealer">@AccountRole.Dealer</option>
-                                    <option value="Customer">@AccountRole.Customer</option>
+                                <InputSelect class="form-select" @bind-Value="createAccountModel.Role">
+                                    @foreach (AccountRole r in Enum.GetValues(typeof(AccountRole)))
+                                    {
+                                        <option value="@r">@r.ToString()</option>
+                                    }
+                                </InputSelect>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label class="form-label">Assign to Dealer (dealer account) - optional</label>
+                                <select class="form-select" @bind="SelectedDealerAccountId">
+                                    <option value="">-- optional dealer account --</option>
+                                    @foreach (var da in dealerAccounts)
+                                    {
+                                        <option value="@da.Id">@da.Name (@da.Email)</option>
+                                    }
                                 </select>
                             </div>
 
-                            <div class="col-md-8">
-                                <label class="form-label">Dealer (optional)</label>
-                                <select class="form-select" @bind="SelectedDealerIdForAccount">
-                                    <option value="">-- optional dealer --</option>
-                                    @foreach (var d in dealers)
-                                    {
-                                        <option value="@d.Id">@d.Name</option>
-                                    }
-                                </select>
+                            <div class="col-md-4">
+                                <label class="form-label">Dealer (entity) - read-only</label>
+                                <InputText class="form-control" Value="@(createAccountModel.DealerId?.ToString() ?? "")" Disabled="true" />
                             </div>
 
                             <div class="col-md-6">
@@ -96,7 +103,7 @@ else
                     </EditForm>
 
                     <div class="form-text mt-2">
-                        Tip: To create a Dealer account choose role "Dealer". To create a Customer choose "Customer" and pick a Dealer.
+                        Tip: To create a Dealer account choose role "Dealer". To create a Customer choose "Customer" and pick a Dealer account above.
                     </div>
                 </div>
             </div>
@@ -155,6 +162,7 @@ else
                 </div>
             </div>
         </div>
+    </div>
 }
 
 @code {
@@ -166,47 +174,19 @@ else
     List<CustomerDto> customersForSelectedDealer = new();
     List<AccountDto> accounts = new();
 
-    // models
-    CreateCustomerDto createCustomerModel = new();
+    List<AccountDto> dealerAccounts = new();
+
+    // create account model
     CreateAccountDto createAccountModel = new();
 
     // flags and messages
-    bool isProcessingCustomer = false;
     bool isProcessingAccount = false;
     bool isProcessingAssign = false;
 
-    string customerMsg = "";
     string accountMsg = "";
     string assignMsg = "";
 
-    Guid? SelectedDealerId
-    {
-        get => selectedDealerId;
-        set
-        {
-            if (selectedDealerId != value)
-            {
-                selectedDealerId = value;
-                _ = LoadCustomersForDealerAsync(selectedDealerId);
-            }
-        }
-    }
-    Guid? selectedDealerId;
-    Guid? SelectedDealerIdForAccount
-    {
-        get => selectedDealerIdForAccount;
-        set
-        {
-            if (selectedDealerIdForAccount != value)
-            {
-                selectedDealerIdForAccount = value;
-                _ = LoadCustomersForDealerAsync(selectedDealerIdForAccount);
-            }
-        }
-    }
-    Guid? selectedDealerIdForAccount;
-
-    Guid? selectedCustomerIdForAccount;
+    Guid? selectedDealerAccountId;
     Guid? assignAccountId = null;
     string assignMac = "";
     string assignUnitName = "";
@@ -220,6 +200,30 @@ else
             "Customers" => accounts.Where(a => a.Role == AccountRole.Customer),
             _ => accounts
         };
+
+    Guid? SelectedDealerAccountId
+    {
+        get => selectedDealerAccountId;
+        set
+        {
+            if (selectedDealerAccountId != value)
+            {
+                selectedDealerAccountId = value;
+
+                if (selectedDealerAccountId.HasValue)
+                {
+                    var acct = accounts.FirstOrDefault(a => a.Id == selectedDealerAccountId.Value);
+                    createAccountModel.DealerId = acct?.DealerId;
+                    _ = LoadCustomersForDealerAsync(acct?.DealerId);
+                }
+                else
+                {
+                    createAccountModel.DealerId = null;
+                    customersForSelectedDealer = new();
+                }
+            }
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -241,34 +245,35 @@ else
 
         if (user?.Identity?.IsAuthenticated != true)
         {
+            isAuthorized = false;
+            loading = false;
             Nav.NavigateTo("/login");
             return;
         }
 
-        if (!user.IsInRole("Admin"))
+        // require Admin for this page
+        if (!user.IsInRole("Admin") && !user.IsInRole(nameof(AccountRole.Admin)))
         {
+            isAuthorized = false;
+            loading = false;
             Nav.NavigateTo("/dashboard");
             return;
         }
 
         isAuthorized = true;
 
-        Api.SetToken(await AuthService.GetTokenAsync());
+        var token = await AuthService.GetTokenAsync();
+        Api.SetToken(token);
 
         try
         {
             dealers = await Api.GetDealersAsync();
             accounts = await Api.GetAccountsAsync();
+            dealerAccounts = accounts.Where(a => a.Role == AccountRole.Dealer).ToList();
         }
         catch (HttpRequestException ex)
         {
-            if (ex.Message.Contains("401"))
-            {
-                await AuthService.LogoutAsync();
-                Nav.NavigateTo("/login");
-                return;
-            }
-            customerMsg = ex.Message;
+            accountMsg = ex.Message;
         }
         finally
         {
@@ -293,31 +298,8 @@ else
         }
         catch (Exception ex)
         {
-            customerMsg = ex.Message;
+            accountMsg = ex.Message;
             StateHasChanged();
-        }
-    }
-
-    async Task HandleCreateCustomer()
-    {
-        isProcessingCustomer = true;
-        customerMsg = "";
-        try
-        {
-            if (SelectedDealerId == null) { customerMsg = "Select dealer first."; return; }
-            var dto = new CreateCustomerDto { Name = createCustomerModel.Name, DealerId = SelectedDealerId };
-            var res = await Api.CreateCustomerAsync(dto);
-            customerMsg = $"Customer created: {res?.Id}";
-            customersForSelectedDealer = await Api.GetCustomersAsync(SelectedDealerId);
-            createCustomerModel = new();
-        }
-        catch (Exception ex)
-        {
-            customerMsg = ex.Message;
-        }
-        finally
-        {
-            isProcessingCustomer = false;
         }
     }
 
@@ -325,10 +307,10 @@ else
     {
         isProcessingAccount = true;
         accountMsg = "";
+
         try
         {
-            createAccountModel.DealerId = SelectedDealerIdForAccount;
-            // CustomerId already bound in the form if selected
+            // createAccountModel.DealerId already set when selecting dealer-account
             var res = await Api.CreateAccountAsync(createAccountModel);
             if (res is null)
             {
@@ -338,10 +320,11 @@ else
             {
                 accountMsg = $"Account created: {res.Id} ({res.Email})";
                 accounts = await Api.GetAccountsAsync();
-                createAccountModel = new CreateAccountDto();
+                dealerAccounts = accounts.Where(a => a.Role == AccountRole.Dealer).ToList();
+                // reset form
+                createAccountModel = new();
                 customersForSelectedDealer = new();
-                SelectedDealerIdForAccount = null;
-                selectedCustomerIdForAccount = null;
+                selectedDealerAccountId = null;
             }
         }
         catch (HttpRequestException ex)
@@ -355,6 +338,7 @@ else
         finally
         {
             isProcessingAccount = false;
+            StateHasChanged();
         }
     }
 
@@ -365,48 +349,19 @@ else
 
         try
         {
-            if (assignAccountId == null)
-            {
-                assignMsg = "Choose account.";
-                return;
-            }
-
-            var mac = (assignMac ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(mac))
-            {
-                assignMsg = "Provide MAC address.";
-                return;
-            }
-
-            // Simple normalization: remove non-hex characters (optional)
-            var normalized = new string(mac.Where(char.IsLetterOrDigit).ToArray());
-            if (normalized.Length < 8)
-            {
-                assignMsg = "MAC looks invalid.";
-                return;
-            }
-
+            if (assignAccountId == null) { assignMsg = "Choose account."; return; }
             var dto = new AssignUnitDto
             {
-                MacAddress = mac, // backend uses case-insensitive compare
+                MacAddress = assignMac,
                 AccountId = assignAccountId.Value,
-                UnitName = assignUnitName?.Trim() ?? "",
-                Location = assignLocation?.Trim() ?? ""
+                UnitName = assignUnitName,
+                Location = assignLocation
             };
 
-            // Admin page -> call admin endpoint (ApiService handles URL)
             var res = await Api.AssignUnitAsync(dto);
-
-            if (res != null)
-            {
-                assignMsg = $"Unit assigned: {res.MacAddress}";
-                // Optionally refresh accounts/units
-                accounts = await Api.GetAccountsAsync();
-            }
-            else
-            {
-                assignMsg = "No response from server.";
-            }
+            assignMsg = $"Unit assigned: {res?.MacAddress}";
+            // refresh accounts/units if needed
+            accounts = await Api.GetAccountsAsync();
         }
         catch (HttpRequestException ex)
         {
