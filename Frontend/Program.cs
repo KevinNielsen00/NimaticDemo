@@ -1,7 +1,6 @@
 using Blazored.LocalStorage;
 using Frontend.Components;
 using Frontend.Services;
-using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +17,6 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<ApiService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
-builder.Services.AddAuthorizationCore();
 
 var app = builder.Build();
 

@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using Frontend.Services
+﻿@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @inject Frontend.Services.AuthService AuthService
 @inject Frontend.Services.ApiService ApiService
 @inject AuthenticationStateProvider AuthStateProvider
@@ -15,66 +14,84 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="nav flex-column">
+        @if (!loaded)
+        {
+            <div class="nav-item px-3">
+                <span class="nav-link">Loading...</span>
+            </div>
+        }
+        else if (!isLoggedIn)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/login">
+                    Login
+                </NavLink>
+            </div>
+        }
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/dashboard">
+                    Dashboard
+                </NavLink>
+            </div>
 
-        <!-- Visible to any authenticated user -->
-        <AuthorizeView>
-            <Authorized>
+            @if (isAdmin)
+            {
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/dashboard">Dashboard</NavLink>
+                    <NavLink class="nav-link" href="/admin">
+                        Admin
+                    </NavLink>
                 </div>
+            }
 
+            @if (isDealer)
+            {
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/settings">Settings</NavLink>
+                    <NavLink class="nav-link" href="/dealer">
+                        Dealer
+                    </NavLink>
                 </div>
+            }
 
-                <div class="nav-item px-3">
-                    <button class="btn btn-outline-danger w-100" @onclick="Logout">Logout</button>
-                </div>
-            </Authorized>
-        </AuthorizeView>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/settings">
+                    Settings
+                </NavLink>
+            </div>
 
-        <!-- Admin only link -->
-        <AuthorizeView Roles="Admin">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/admin">Admin</NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
-
-        <!-- Dealer and Admin link -->
-        <AuthorizeView Roles="Dealer,Admin">
-            <Authorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/dealer">Dealer</NavLink>
-                </div>
-            </Authorized>
-        </AuthorizeView>
-
-        <!-- Visible to not authenticated users -->
-        <AuthorizeView>
-            <NotAuthorized>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/login">Login</NavLink>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
-
+            <div class="nav-item px-3">
+                <button class="btn btn-outline-danger w-100" @onclick="Logout">
+                    Logout
+                </button>
+            </div>
+        }
     </nav>
 </div>
 
 @code {
-    private bool initialized;
+    private bool isLoggedIn;
+    private bool loaded;
+    private bool isAdmin;
+    private bool isDealer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender) return; // run client-only on second render
+        if (!firstRender || loaded)
+            return;
+
+        loaded = true;
 
         var token = await AuthService.GetTokenAsync();
-        if (!string.IsNullOrWhiteSpace(token)) ApiService.SetToken(token.Trim('"'));
+        isLoggedIn = !string.IsNullOrWhiteSpace(token);
 
-        if (AuthStateProvider is Frontend.Services.JwtAuthStateProvider jwt)
-            await jwt.NotifyAuthenticationStateFromLocalStorageAsync();
+        if (isLoggedIn)
+        {
+            ApiService.SetToken(token);
+            var role = GetRoleFromToken(token);
+            isAdmin = string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+            isDealer = string.Equals(role, "Dealer", StringComparison.OrdinalIgnoreCase);
+        }
 
         StateHasChanged();
     }
@@ -82,6 +99,63 @@
     private async Task Logout()
     {
         await AuthService.LogoutAsync();
+        isLoggedIn = false;
         Navigation.NavigateTo("/login", forceLoad: true);
+    }
+
+    // Minimal JWT payload decode (no validation) to extract role claim.
+    private static string? GetRoleFromToken(string jwt)
+    {
+        try
+        {
+            var parts = jwt.Split('.');
+            if (parts.Length < 2) return null;
+            string payload = parts[1];
+            payload = PadBase64(payload.Replace('-', '+').Replace('_', '/'));
+            var bytes = Convert.FromBase64String(payload);
+            var json = System.Text.Encoding.UTF8.GetString(bytes);
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Common names: "role", ClaimTypes.Role URL, or short "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            if (root.TryGetProperty("role", out var prop))
+                return prop.ValueKind == System.Text.Json.JsonValueKind.String ? prop.GetString() : prop.ToString();
+
+            // Try well-known claim URI
+            var roleClaimUris = new[] {
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+                "roles",
+                "role"
+            };
+
+            foreach (var uri in roleClaimUris)
+            {
+                if (root.TryGetProperty(uri, out var p))
+                    return p.ValueKind == System.Text.Json.JsonValueKind.String ? p.GetString() : p.ToString();
+            }
+
+            // fallback: scan properties for role-like key
+            foreach (var propKvp in root.EnumerateObject())
+            {
+                if (propKvp.Name.IndexOf("role", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return propKvp.Value.ValueKind == System.Text.Json.JsonValueKind.String ? propKvp.Value.GetString() : propKvp.Value.ToString();
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string PadBase64(string b64)
+    {
+        switch (b64.Length % 4)
+        {
+            case 2: return b64 + "==";
+            case 3: return b64 + "=";
+            default: return b64;
+        }
     }
 }
