@@ -52,7 +52,7 @@ else
 
                             <div class="col-md-4">
                                 <label class="form-label">Dealer (entity) - read-only</label>
-                                <InputText class="form-control" Value="@(createAccountModel.DealerId?.ToString() ?? "")" Disabled="true" />
+                                <input class="form-control" value="@(createAccountModel.DealerId?.ToString() ?? "")" disabled />
                             </div>
 
                             <div class="col-md-6">
@@ -310,7 +310,9 @@ else
 
         try
         {
-            // createAccountModel.DealerId already set when selecting dealer-account
+            // ensure DealerId is set from selected dealer account (if any)
+            createAccountModel.DealerId = createAccountModel.DealerId;
+
             var res = await Api.CreateAccountAsync(createAccountModel);
             if (res is null)
             {
